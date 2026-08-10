@@ -1,0 +1,16 @@
+{
+  "name": "AyuAura | Handcrafted Ayurvedic Skincare",
+  "short_name": "AyuAura",
+  "description": "Handcrafted Ayurvedic skincare formulated by a qualified BAMS doctor.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F9F7F2",
+  "theme_color": "#355E3B",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
