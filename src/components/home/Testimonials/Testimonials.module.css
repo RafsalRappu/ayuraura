@@ -1,0 +1,17 @@
+.swiper {
+    padding-bottom: 48px !important;
+}
+
+.swiper :global(.swiper-slide) {
+    height: auto;
+    display: flex;
+}
+
+.swiper :global(.swiper-pagination-bullet) {
+    background: var(--brand-primary);
+    opacity: 0.3;
+}
+
+.swiper :global(.swiper-pagination-bullet-active) {
+    opacity: 1;
+}

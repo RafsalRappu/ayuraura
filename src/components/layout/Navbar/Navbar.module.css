@@ -1,0 +1,52 @@
+.appBar {
+  background: rgba(255, 255, 255, 0.75) !important;
+  backdrop-filter: blur(18px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.toolbar {
+  height: 80px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+}
+
+.logo h5 {
+  font-weight: 700;
+}
+
+.menu {
+  display: flex;
+  gap: 12px;
+}
+
+.menuButton {
+  color: #2f2f2f !important;
+  font-weight: 500 !important;
+  border-radius: 30px !important;
+  padding: 8px 20px !important;
+  transition: all .3s ease !important;
+}
+
+.menuButton:hover {
+  background: rgba(var(--brand-primary-rgb), .08) !important;
+}
+
+.activeButton {
+  background: var(--brand-primary) !important;
+  color: white !important;
+  border-radius: 30px !important;
+  padding: 8px 20px !important;
+}
+
+@media (max-width:900px) {
+  .toolbar {
+    height: 70px;
+  }
+}
