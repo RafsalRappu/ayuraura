@@ -1,4 +1,5 @@
-import { Box, Chip, Stack, Typography } from "@mui/material";
+import { useMemo } from "react";
+import { Box, Chip, Skeleton, Stack, Typography } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
 import SpaIcon from "@mui/icons-material/Spa";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
@@ -10,13 +11,18 @@ import CustomButton from "../../common/CustomButton";
 import PageContainer from "../../common/PageContainer";
 import ProductMedia from "../../products/ProductMedia";
 import { whatsappLink } from "../../../config/site";
-import { products } from "../../../data/products";
+import { useProducts } from "../../../data/useProducts";
 
 import styles from "./Hero.module.css";
 
-const heroProducts = products.filter((product) => product.featured).slice(0, 3);
-
 const Hero = () => {
+    const { products, status } = useProducts();
+
+    const heroProducts = useMemo(
+        () => products.filter((product) => product.featured).slice(0, 3),
+        [products]
+    );
+
     return (
         <Box className={styles.hero}>
             <PageContainer>
@@ -95,22 +101,33 @@ const Hero = () => {
                             transition={{ delay: .4 }}
                         >
                             <Box className={styles.productArea}>
-                                {heroProducts.map((product) => (
-                                    <Box
-                                        key={product.id}
-                                        className={styles.card}
-                                        component={RouterLink}
-                                        to={`/products/${product.slug}`}
-                                    >
-                                        <Box className={styles.cardMedia}>
-                                            <ProductMedia product={product} iconSize="1.8rem" />
-                                        </Box>
+                                {status === "loading"
+                                    ? Array.from({ length: 3 }, (_, index) => (
+                                          <Box key={index} className={styles.card}>
+                                              <Box className={styles.cardMedia}>
+                                                  <Skeleton variant="circular" width={64} height={64} />
+                                              </Box>
 
-                                        <Typography variant="h6">{product.name}</Typography>
+                                              <Skeleton variant="text" sx={{ mx: "auto", width: "70%" }} />
+                                              <Skeleton variant="text" sx={{ mx: "auto", width: "40%" }} />
+                                          </Box>
+                                      ))
+                                    : heroProducts.map((product) => (
+                                          <Box
+                                              key={product.id}
+                                              className={styles.card}
+                                              component={RouterLink}
+                                              to={`/products/${product.slug}`}
+                                          >
+                                              <Box className={styles.cardMedia}>
+                                                  <ProductMedia product={product} iconSize="1.8rem" />
+                                              </Box>
 
-                                        <Typography color="primary">₹{product.price}</Typography>
-                                    </Box>
-                                ))}
+                                              <Typography variant="h6">{product.name}</Typography>
+
+                                              <Typography color="primary">₹{product.price}</Typography>
+                                          </Box>
+                                      ))}
                             </Box>
                         </motion.div>
                     </Box>

@@ -2,6 +2,7 @@ import { Link as RouterLink, Navigate, useParams } from "react-router-dom";
 import {
     Box,
     Chip,
+    CircularProgress,
     Divider,
     List,
     ListItem,
@@ -24,21 +25,33 @@ import SEO from "../../components/common/SEO";
 import ProductMedia from "../../components/products/ProductMedia";
 import RelatedProducts from "../../components/products/RelatedProducts";
 
-import { getProductBySlug, getRelatedProducts } from "../../data/products";
+import { useProducts } from "../../data/useProducts";
 import { whatsappLink } from "../../config/site";
 import { breadcrumbSchema, productSchema } from "../../utils/structuredData";
 
 const ProductDetails = () => {
     const { slug } = useParams<{ slug: string }>();
     const [tab, setTab] = useState(0);
+    const { status, getBySlug, getRelated } = useProducts();
 
-    const product = slug ? getProductBySlug(slug) : undefined;
+    const product = slug ? getBySlug(slug) : undefined;
 
+    // The catalogue arrives asynchronously — wait for it before deciding a
+    // product does not exist, or every direct link would bounce to 404.
     if (!product) {
+        if (status === "loading") {
+            return (
+                <PageContainer>
+                    <Box sx={{ display: "flex", justifyContent: "center", py: 12 }}>
+                        <CircularProgress color="primary" />
+                    </Box>
+                </PageContainer>
+            );
+        }
         return <Navigate to="/404" replace />;
     }
 
-    const relatedProducts = getRelatedProducts(product);
+    const relatedProducts = getRelated(product);
 
     const crumbs = [
         { label: "Home", path: "/" },

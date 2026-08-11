@@ -1,14 +1,21 @@
+import { useMemo } from "react";
 import { Grid } from "@mui/material";
 
-import { products } from "../../../data/products";
+import { useProducts } from "../../../data/useProducts";
 
 import ProductCard from "../../products/ProductCard/ProductCard";
+
+import ProductCardSkeleton from "../../products/ProductCardSkeleton";
 
 import SectionTitle from "../../common/SectionTitle";
 
 import PageContainer from "../../common/PageContainer";
 
 const FeaturedProducts = () => {
+    const { products, status } = useProducts();
+
+    const featured = useMemo(() => products.filter((p) => p.featured), [products]);
+
     return (
         <PageContainer>
             <SectionTitle
@@ -17,16 +24,17 @@ const FeaturedProducts = () => {
             />
 
             <Grid container spacing={4}>
-                {products
-                    .filter((p) => p.featured)
-                    .map((product) => (
-                        <Grid
-                            key={product.id}
-                            size={{ xs: 12, md: 4 }}
-                        >
-                            <ProductCard product={product} />
-                        </Grid>
-                    ))}
+                {status === "loading"
+                    ? Array.from({ length: 3 }, (_, index) => (
+                          <Grid key={index} size={{ xs: 12, md: 4 }}>
+                              <ProductCardSkeleton />
+                          </Grid>
+                      ))
+                    : featured.map((product) => (
+                          <Grid key={product.id} size={{ xs: 12, md: 4 }}>
+                              <ProductCard product={product} />
+                          </Grid>
+                      ))}
             </Grid>
         </PageContainer>
     );

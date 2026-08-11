@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s -w \"\\\\nHTTP %{http_code} | content-type: %{content_type}\\\\n\" http://localhost:5173/api/admin/session)",
+      "Bash(curl -s -w \"\\\\nHTTP %{http_code} | %{content_type}\\\\n\" http://localhost:5174/api/admin/session)",
+      "Bash(curl -s -w \"\\\\nHTTP %{http_code}\\\\n\" http://localhost:5174/api/products)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code} | %{content_type}\\\\n\" http://localhost:5174/admin)",
+      "Bash(curl -s -w \"\\\\nHTTP %{http_code}\\\\n\" http://localhost:3999/api/admin/session)",
+      "Bash(curl -s -w \" [%{http_code}]\\\\n\" -X POST -H \"Content-Type: application/json\" -d '{\"password\":\"localdev\"}' http://localhost:3999/api/admin/login)",
+      "Bash(curl -s -o /dev/null -w \"HTTP %{http_code} | %{content_type}\\\\n\" http://localhost:3999/admin)",
+      "Bash(curl -s http://localhost:3998/api/admin/session)",
+      "Bash(npm -v)",
+      "Bash(npx vercel *)",
+      "Bash(npm run *)",
+      "Bash(curl -s -o /dev/null -w \"status %{http_code}, %{size_download} bytes\\\\n\" -m 20 http://localhost:3010/)",
+      "Bash(curl -s -m 60 -w \"\\\\n[status %{http_code}]\\\\n\" http://localhost:3010/api/products)",
+      "Bash(curl -s -m 60 -w \"\\\\n[status %{http_code}]\\\\n\" http://localhost:3010/api/admin/session)",
+      "Bash(curl -s -m 60 -b __TRACKED_VAR__/ck.txt http://localhost:3010/api/admin/session -w '\\\\n[status %{http_code}]\\\\n')",
+      "Bash(curl -s -m 60 http://localhost:3010/sitemap.xml -w \"\\\\n[status %{http_code}]\\\\n\")",
+      "Bash(curl -s -o /dev/null -w \"/admin  -> %{http_code}\\\\n\" -m 20 http://localhost:3010/admin)",
+      "Bash(curl -s -o /dev/null -w \"/products -> %{http_code}\\\\n\" -m 20 http://localhost:3010/products)"
+    ]
+  }
+}

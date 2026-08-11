@@ -11,6 +11,10 @@ const Contact = lazy(() => import("../pages/Contacts/Contact"));
 const ProductDetails = lazy(() => import("../pages/ProductDetails/ProductDetails"));
 const NotFound = lazy(() => import("../pages/NotFound/NotFound"));
 
+// Admin lives outside MainLayout and in its own chunk, so none of it ships
+// with the storefront bundle.
+const Admin = lazy(() => import("../pages/Admin/Admin"));
+
 const PageFallback = () => (
     <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "50vh" }}>
         <CircularProgress color="primary" />
@@ -21,6 +25,8 @@ const AppRouter = () => {
     return (
         <Suspense fallback={<PageFallback />}>
             <Routes>
+                <Route path="/admin" element={<Admin />} />
+
                 <Route element={<MainLayout />}>
                     <Route index element={<Home />} />
 
