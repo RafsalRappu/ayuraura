@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
-import { clearSessionCookie } from "../_lib/auth";
-import { methodNotAllowed, sendJson } from "../_lib/http";
+import { clearSessionCookie } from "../_lib/auth.js";
+import { methodNotAllowed, sendJson } from "../_lib/http.js";
 
 const handler = (req: VercelRequest, res: VercelResponse) => {
     if (req.method !== "POST") return methodNotAllowed(res, ["POST"]);

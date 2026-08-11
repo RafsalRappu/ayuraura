@@ -6,8 +6,8 @@ import {
     isAdminConfigured,
     setSessionCookie,
     verifyPassword,
-} from "../_lib/auth";
-import { asRecord, logFailure, methodNotAllowed, sendError, sendJson } from "../_lib/http";
+} from "../_lib/auth.js";
+import { asRecord, logFailure, methodNotAllowed, sendError, sendJson } from "../_lib/http.js";
 
 const handler = (req: VercelRequest, res: VercelResponse) => {
     if (req.method !== "POST") return methodNotAllowed(res, ["POST"]);
