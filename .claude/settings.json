@@ -18,7 +18,29 @@
       "Bash(curl -s -m 60 -b __TRACKED_VAR__/ck.txt http://localhost:3010/api/admin/session -w '\\\\n[status %{http_code}]\\\\n')",
       "Bash(curl -s -m 60 http://localhost:3010/sitemap.xml -w \"\\\\n[status %{http_code}]\\\\n\")",
       "Bash(curl -s -o /dev/null -w \"/admin  -> %{http_code}\\\\n\" -m 20 http://localhost:3010/admin)",
-      "Bash(curl -s -o /dev/null -w \"/products -> %{http_code}\\\\n\" -m 20 http://localhost:3010/products)"
+      "Bash(curl -s -o /dev/null -w \"/products -> %{http_code}\\\\n\" -m 20 http://localhost:3010/products)",
+      "Bash(curl -s -m 30 -w \"\\\\n[status %{http_code}]\\\\n\" http://localhost:3010/src/main.tsx)",
+      "Bash(curl -s -m 30 -o /dev/null -w \"status %{http_code} type=%{content_type}\\\\n\" http://localhost:3010/site.webmanifest)",
+      "Bash(curl -s -m 30 -o /dev/null -w \"status %{http_code} type=%{content_type}\\\\n\" http://localhost:3010/@vite/client)",
+      "Bash(curl -s -o /dev/null -m 2 http://localhost:3010/)",
+      "Bash(curl -s -m 30 -o /dev/null -w \"status %{http_code} type=%{content_type}\\\\n\" http://localhost:3010/src/main.tsx)",
+      "Bash(curl -s -m 30 -o /dev/null -w \"status %{http_code} type=%{content_type}\\\\n\" http://localhost:3010/products)",
+      "PowerShell(foreach \\($p in 3010,3011,3012,3013\\) { $c = Get-NetTCPConnection -LocalPort $p -State Listen -ErrorAction SilentlyContinue; if \\($c\\) { foreach \\($pid_ in \\($c.OwningProcess | Select-Object -Unique\\)\\) { $proc = Get-Process -Id $pid_ -ErrorAction SilentlyContinue; if \\($proc\\) { Write-Output \"port $p -> PID $pid_ \\($\\($proc.ProcessName\\)\\) - killing\"; Stop-Process -Id $pid_ -Force -ErrorAction SilentlyContinue } } } else { Write-Output \"port $p -> free\" } })",
+      "Bash(npx tsc *)",
+      "Bash(echo \"[typecheck exit: $?]\")",
+      "Bash(node -e ' *)",
+      "PowerShell(foreach \\($p in 3010,3011,3012\\) { $c = Get-NetTCPConnection -LocalPort $p -State Listen -ErrorAction SilentlyContinue; if \\($c\\) { foreach \\($id in \\($c.OwningProcess | Select-Object -Unique\\)\\) { Write-Output \"killing PID $id on port $p\"; Stop-Process -Id $id -Force -ErrorAction SilentlyContinue } } else { Write-Output \"port $p free\" } })",
+      "Bash(curl -s -m 90 \"http://localhost:3010/api/products?fresh=1\" -w \"\\\\n[status %{http_code}]\\\\n\")",
+      "Bash(curl -s -m 90 \"http://localhost:3010/api/products?fresh=1\")",
+      "Bash(node -e 'let d=\"\";process.stdin.on\\(\"data\",c=>d+=c\\).on\\(\"end\",\\(\\)=>{const j=JSON.parse\\(d\\);const a=Array.isArray\\(j\\)?j:j.products;console.log\\(a.length+\" products:\",a.map\\(p=>p.slug\\).join\\(\", \"\\)\\)}\\)')",
+      "Bash(curl -s -m 60 -o /dev/null -w \"status %{http_code}\\\\n\" \"http://localhost:3010/api/products/kumkumadi-face-oil\")",
+      "Bash(curl -s -m 60 http://localhost:3010/sitemap.xml)",
+      "Bash(xargs -I{} echo \"{} <loc> entries\")",
+      "Bash(rm -f /tmp/ayu2.txt)",
+      "Bash(curl -s -m 60 -X POST http://localhost:3010/api/admin/login -H 'Content-Type: application/json' -H 'Origin: http://localhost:3010' -d '{\"password\":\"localdev\"}' -c /tmp/ayu2.txt -o /dev/null)",
+      "Bash(curl -s -m 90 -X POST http://localhost:3010/api/products -H 'Content-Type: application/json' -H 'Origin: http://localhost:3010' -b /tmp/ayu2.txt -d '{\"name\":\"ZZ Smoke Test\",\"slug\":\"zz-smoke-test\",\"price\":100,\"category\":\"Test\",\"icon\":\"face\",\"shortDescription\":\"temp\",\"description\":\"temporary smoke test row\"}' -w '\\\\n[status %{http_code}]\\\\n')",
+      "Bash(curl -s -m 90 -X DELETE http://localhost:3010/api/products/herbal-lip-balm -H \"Origin: http://localhost:3010\" -w \"\\\\n[status %{http_code}]\\\\n\")",
+      "Bash(node -e 'let d=\"\";process.stdin.on\\(\"data\",c=>d+=c\\).on\\(\"end\",\\(\\)=>{const j=JSON.parse\\(d\\);console.log\\(j.products.length+\" products\"\\)}\\)')"
     ]
   }
 }
