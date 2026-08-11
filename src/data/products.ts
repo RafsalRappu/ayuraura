@@ -1,16 +1,20 @@
 import type { Product } from "../types/product";
-import lipBalmImage from "../assets/images/lipbalm.jpg";
-import faceoil from "../assets/images/faceoil.jpg";
-import kajal from "../assets/images/kajal.jpg";
 
-export const products: Product[] = [
+/**
+ * The catalogue the site shipped with. Products now live in Postgres and are
+ * served from `/api/products` — this list is the offline fallback rendered when
+ * that request fails, and the payload `npm run db:seed` writes into an empty
+ * database. Images are referenced from `public/` so the seed script (which runs
+ * outside Vite) resolves the same paths the browser does.
+ */
+export const seedProducts: Product[] = [
     {
         id: 1,
         slug: "herbal-lip-balm",
         name: "Herbal Lip Balm",
         price: 249,
         category: "Lip Care",
-        image: lipBalmImage,
+        image: "/products/lipbalm.jpg",
         icon: "lip",
         shortDescription: "Deep nourishment for dry lips.",
         description:
@@ -36,7 +40,7 @@ export const products: Product[] = [
         name: "Kumkumadi Face Oil",
         price: 499,
         category: "Face Care",
-        image: faceoil,
+        image: "/products/faceoil.jpg",
         icon: "face",
 
         shortDescription: "Glow naturally.",
@@ -63,7 +67,7 @@ export const products: Product[] = [
         name: "Natural Kajal",
         price: 199,
         category: "Eye Care",
-        image: kajal,
+        image: "/products/kajal.jpg",
         icon: "eye",
 
         shortDescription: "Chemical free kajal.",
@@ -217,10 +221,10 @@ export const products: Product[] = [
     },
 ];
 
-export const getProductBySlug = (slug: string) =>
-    products.find((product) => product.slug === slug);
+export const findBySlug = (catalogue: Product[], slug: string) =>
+    catalogue.find((product) => product.slug === slug);
 
-export const getRelatedProducts = (product: Product, limit = 3) =>
-    products
+export const findRelated = (catalogue: Product[], product: Product, limit = 3) =>
+    catalogue
         .filter((p) => p.id !== product.id && p.category === product.category)
         .slice(0, limit);

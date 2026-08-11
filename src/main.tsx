@@ -9,6 +9,8 @@ import App from "./App";
 
 import { ThemePresetProvider } from "./theme/ThemePresetProvider";
 
+import { ProductsProvider } from "./data/ProductsProvider";
+
 import "./index.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
@@ -16,7 +18,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <HelmetProvider>
       <BrowserRouter>
         <ThemePresetProvider>
-          <App />
+          <ProductsProvider>
+            <App />
+          </ProductsProvider>
         </ThemePresetProvider>
       </BrowserRouter>
     </HelmetProvider>

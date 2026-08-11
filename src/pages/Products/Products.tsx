@@ -1,16 +1,17 @@
 ﻿import { useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Box, Drawer, Grid, IconButton, Typography, useTheme, useMediaQuery } from "@mui/material";
+import { Alert, Box, Drawer, Grid, IconButton, Typography, useTheme, useMediaQuery } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 
 import PageContainer from "../../components/common/PageContainer";
 import ProductsSidebar from "../../components/products/ProductsSidebar/ProductsSidebar";
 import ProductCard from "../../components/products/ProductCard/ProductCard";
+import ProductCardSkeleton from "../../components/products/ProductCardSkeleton";
 import SectionTitle from "../../components/common/SectionTitle";
 import Breadcrumbs from "../../components/common/Breadcrumbs";
 import SEO from "../../components/common/SEO";
 
-import { products } from "../../data/products";
+import { useProducts } from "../../data/useProducts";
 import type { Product } from "../../types/product";
 
 const Products = () => {
@@ -18,6 +19,7 @@ const Products = () => {
     const isMobile = useMediaQuery(theme.breakpoints.down("md"));
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [searchParams, setSearchParams] = useSearchParams();
+    const { products, status } = useProducts();
 
     const category = searchParams.get("category") ?? "all";
     const tag = searchParams.get("tag") ?? "all";
@@ -40,7 +42,7 @@ const Products = () => {
 
     const categories = useMemo(
         () => Array.from(new Set(products.map((product) => product.category))),
-        []
+        [products]
     );
 
     const filteredProducts = useMemo(() => {
@@ -54,7 +56,7 @@ const Products = () => {
 
             return matchesCategory && matchesTag;
         });
-    }, [category, tag]);
+    }, [products, category, tag]);
 
     return (
         <PageContainer>
@@ -97,15 +99,27 @@ const Products = () => {
                 )}
 
                 <Box sx={{ flex: 1, minWidth: 0 }}>
+                    {status === "fallback" && (
+                        <Alert severity="info" sx={{ mb: 3 }}>
+                            Showing our saved catalogue — we couldn't reach the live product list just now.
+                        </Alert>
+                    )}
+
                     <Grid container spacing={4}>
-                        {filteredProducts.map((product: Product) => (
-                            <Grid key={product.id} size={{ xs: 12, sm: 6, md: 4 }}>
-                                <ProductCard product={product} />
-                            </Grid>
-                        ))}
+                        {status === "loading"
+                            ? Array.from({ length: 6 }, (_, index) => (
+                                  <Grid key={index} size={{ xs: 12, sm: 6, md: 4 }}>
+                                      <ProductCardSkeleton />
+                                  </Grid>
+                              ))
+                            : filteredProducts.map((product: Product) => (
+                                  <Grid key={product.id} size={{ xs: 12, sm: 6, md: 4 }}>
+                                      <ProductCard product={product} />
+                                  </Grid>
+                              ))}
                     </Grid>
 
-                    {filteredProducts.length === 0 && (
+                    {status !== "loading" && filteredProducts.length === 0 && (
                         <Typography sx={{ textAlign: "center", color: "text.secondary", py: 8 }}>
                             No products match this filter yet — try another category.
                         </Typography>
