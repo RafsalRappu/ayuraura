@@ -40,7 +40,21 @@
       "Bash(curl -s -m 60 -X POST http://localhost:3010/api/admin/login -H 'Content-Type: application/json' -H 'Origin: http://localhost:3010' -d '{\"password\":\"localdev\"}' -c /tmp/ayu2.txt -o /dev/null)",
       "Bash(curl -s -m 90 -X POST http://localhost:3010/api/products -H 'Content-Type: application/json' -H 'Origin: http://localhost:3010' -b /tmp/ayu2.txt -d '{\"name\":\"ZZ Smoke Test\",\"slug\":\"zz-smoke-test\",\"price\":100,\"category\":\"Test\",\"icon\":\"face\",\"shortDescription\":\"temp\",\"description\":\"temporary smoke test row\"}' -w '\\\\n[status %{http_code}]\\\\n')",
       "Bash(curl -s -m 90 -X DELETE http://localhost:3010/api/products/herbal-lip-balm -H \"Origin: http://localhost:3010\" -w \"\\\\n[status %{http_code}]\\\\n\")",
-      "Bash(node -e 'let d=\"\";process.stdin.on\\(\"data\",c=>d+=c\\).on\\(\"end\",\\(\\)=>{const j=JSON.parse\\(d\\);console.log\\(j.products.length+\" products\"\\)}\\)')"
+      "Bash(node -e 'let d=\"\";process.stdin.on\\(\"data\",c=>d+=c\\).on\\(\"end\",\\(\\)=>{const j=JSON.parse\\(d\\);console.log\\(j.products.length+\" products\"\\)}\\)')",
+      "Bash(netstat -ano)",
+      "Bash(powershell -NoProfile -Command \"Get-Process -Id 2192 | Select-Object Id,ProcessName,Path,StartTime | Format-List\")",
+      "Bash(powershell -NoProfile -Command \"Get-CimInstance Win32_Process -Filter 'ProcessId=2192' | Select-Object CommandLine\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3010/api/products)",
+      "Bash(curl -s http://localhost:3010/ -o /dev/null -w \"root: %{http_code}\\\\n\")",
+      "Bash(powershell -NoProfile -Command \"Stop-Process -Id 2192 -Force\")",
+      "Bash(powershell -NoProfile -Command \"Get-CimInstance Win32_Process -Filter 'ProcessId=37040' | Select-Object ProcessId,CommandLine\")",
+      "Bash(powershell -NoProfile -Command \"Stop-Process -Id 37040 -Force\")",
+      "Bash(curl -s http://localhost:3010/api/products)",
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>console.log\\(d.slice\\(0,800\\)\\)\\)\")",
+      "Bash(curl -s -o /dev/null -w \"site: %{http_code}\\\\n\" http://localhost:3010/)",
+      "Bash(curl -s -o /dev/null -w \"admin: %{http_code}\\\\n\" http://localhost:3010/admin)",
+      "Bash(curl -s http://localhost:3010/api/admin/session)",
+      "Bash(curl -s -i -X POST http://localhost:3010/api/admin/login -H \"Content-Type: application/json\" -d '{\"password\":\"localdev\"}')"
     ]
   }
 }
