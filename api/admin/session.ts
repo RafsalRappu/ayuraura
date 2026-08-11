@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
-import { isAdminConfigured, isAuthenticated } from "../_lib/auth";
-import { methodNotAllowed, sendJson } from "../_lib/http";
+import { isAdminConfigured, isAuthenticated } from "../_lib/auth.js";
+import { methodNotAllowed, sendJson } from "../_lib/http.js";
 
 const handler = (req: VercelRequest, res: VercelResponse) => {
     if (req.method !== "GET") return methodNotAllowed(res, ["GET"]);

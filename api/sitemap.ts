@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
-import { ensureSchema, getSql } from "./_lib/db";
-import { logFailure, methodNotAllowed } from "./_lib/http";
-import { siteConfig } from "../src/config/site";
+import { ensureSchema, getSql } from "./_lib/db.js";
+import { logFailure, methodNotAllowed } from "./_lib/http.js";
+import { siteConfig } from "../src/config/site.js";
 
 interface Entry {
     path: string;
