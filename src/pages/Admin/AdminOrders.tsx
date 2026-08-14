@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
     Alert,
     Box,
@@ -8,6 +8,7 @@ import {
     Dialog,
     DialogContent,
     DialogTitle,
+    InputAdornment,
     MenuItem,
     Paper,
     Stack,
@@ -20,7 +21,9 @@ import {
     TextField,
     Typography,
 } from "@mui/material";
+import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 import RefreshIcon from "@mui/icons-material/Refresh";
+import SearchIcon from "@mui/icons-material/Search";
 
 import { errorMessage } from "../../api/client";
 import { fetchOrders, updateOrderStatus } from "../../api/orders";
@@ -28,6 +31,7 @@ import { orderShortCode } from "../../data/cart";
 import type { AdminOrder, OrderStatus } from "../../types/order";
 
 const STATUS_OPTIONS: OrderStatus[] = ["pending", "paid", "failed", "cancelled"];
+const STATUS_FILTER_OPTIONS: Array<OrderStatus | "all"> = ["all", ...STATUS_OPTIONS];
 
 const STATUS_LABEL: Record<OrderStatus, string> = {
     pending: "Pending",
@@ -43,10 +47,19 @@ const STATUS_COLOR: Record<OrderStatus, "warning" | "success" | "error" | "defau
     cancelled: "default",
 };
 
-const AdminOrders = () => {
+interface AdminOrdersProps {
+    initialStatusFilter?: string;
+}
+
+const AdminOrders = ({ initialStatusFilter }: AdminOrdersProps) => {
     const [orders, setOrders] = useState<AdminOrder[]>([]);
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState<string | null>(null);
+
+    const [query, setQuery] = useState("");
+    const [statusFilter, setStatusFilter] = useState<OrderStatus | "all">(
+        (initialStatusFilter as OrderStatus | undefined) ?? "all"
+    );
 
     const [selected, setSelected] = useState<AdminOrder | null>(null);
     const [statusDraft, setStatusDraft] = useState<OrderStatus>("pending");
@@ -69,6 +82,19 @@ const AdminOrders = () => {
     useEffect(() => {
         void load();
     }, [load]);
+
+    const filteredOrders = useMemo(() => {
+        const q = query.trim().toLowerCase();
+        return orders.filter((order) => {
+            const matchesStatus = statusFilter === "all" || order.status === statusFilter;
+            const matchesQuery =
+                q === "" ||
+                order.customerName.toLowerCase().includes(q) ||
+                order.customerPhone.toLowerCase().includes(q) ||
+                orderShortCode(order.publicId).toLowerCase().includes(q);
+            return matchesStatus && matchesQuery;
+        });
+    }, [orders, query, statusFilter]);
 
     const openOrder = (order: AdminOrder) => {
         setSelected(order);
@@ -121,6 +147,40 @@ const AdminOrders = () => {
                 </Button>
             </Stack>
 
+            <Stack direction="row" spacing={1.5} sx={{ mb: 3, flexWrap: "wrap" }}>
+                <TextField
+                    value={query}
+                    onChange={(event) => setQuery(event.target.value)}
+                    placeholder="Search by customer, phone or order #…"
+                    size="small"
+                    sx={{ minWidth: { xs: "100%", sm: 300 } }}
+                    slotProps={{
+                        input: {
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <SearchIcon fontSize="small" />
+                                </InputAdornment>
+                            ),
+                        },
+                    }}
+                />
+
+                <TextField
+                    select
+                    label="Status"
+                    value={statusFilter}
+                    onChange={(event) => setStatusFilter(event.target.value as OrderStatus | "all")}
+                    size="small"
+                    sx={{ minWidth: 160 }}
+                >
+                    {STATUS_FILTER_OPTIONS.map((status) => (
+                        <MenuItem key={status} value={status}>
+                            {status === "all" ? "All statuses" : STATUS_LABEL[status]}
+                        </MenuItem>
+                    ))}
+                </TextField>
+            </Stack>
+
             {loadError && (
                 <Alert severity="error" sx={{ mb: 3 }} onClose={() => setLoadError(null)}>
                     {loadError}
@@ -152,13 +212,26 @@ const AdminOrders = () => {
                         {!loading && orders.length === 0 && (
                             <TableRow>
                                 <TableCell colSpan={6} align="center" sx={{ py: 6, color: "text.secondary" }}>
-                                    No orders yet.
+                                    <ReceiptLongOutlinedIcon sx={{ fontSize: 32, mb: 1, opacity: 0.4 }} />
+                                    <Typography variant="body2" color="text.secondary">
+                                        No orders yet.
+                                    </Typography>
+                                </TableCell>
+                            </TableRow>
+                        )}
+
+                        {!loading && orders.length > 0 && filteredOrders.length === 0 && (
+                            <TableRow>
+                                <TableCell colSpan={6} align="center" sx={{ py: 6, color: "text.secondary" }}>
+                                    <Typography variant="body2" color="text.secondary">
+                                        No orders match this search or filter.
+                                    </Typography>
                                 </TableCell>
                             </TableRow>
                         )}
 
                         {!loading &&
-                            orders.map((order) => (
+                            filteredOrders.map((order) => (
                                 <TableRow key={order.publicId} hover onClick={() => openOrder(order)} sx={{ cursor: "pointer" }}>
                                     <TableCell>#{orderShortCode(order.publicId)}</TableCell>
 

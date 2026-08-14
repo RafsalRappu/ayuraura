@@ -19,6 +19,7 @@ import {
     Typography,
 } from "@mui/material";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlined";
+import RateReviewOutlinedIcon from "@mui/icons-material/RateReviewOutlined";
 import RefreshIcon from "@mui/icons-material/Refresh";
 
 import { errorMessage } from "../../api/client";
@@ -151,7 +152,10 @@ const AdminReviews = () => {
                         {!loading && reviews.length === 0 && (
                             <TableRow>
                                 <TableCell colSpan={6} align="center" sx={{ py: 6, color: "text.secondary" }}>
-                                    No reviews yet.
+                                    <RateReviewOutlinedIcon sx={{ fontSize: 32, mb: 1, opacity: 0.4 }} />
+                                    <Typography variant="body2" color="text.secondary">
+                                        No reviews yet.
+                                    </Typography>
                                 </TableCell>
                             </TableRow>
                         )}
