@@ -22,7 +22,7 @@ import { errorMessage } from "../../api/client";
 import { uploadImage } from "../../api/admin";
 import type { ProductPayload } from "../../api/products";
 import { resizeImage } from "../../utils/resizeImage";
-import type { Product } from "../../types/product";
+import type { Product, ProductVariant } from "../../types/product";
 
 const ICON_OPTIONS: { value: Product["icon"]; label: string }[] = [
     { value: "lip", label: "Lip care" },
@@ -49,6 +49,8 @@ interface FormState {
     newArrival: boolean;
     rating: string;
     reviewCount: string;
+    inStock: boolean;
+    variants: string;
 }
 
 const emptyForm: FormState = {
@@ -68,7 +70,23 @@ const emptyForm: FormState = {
     newArrival: false,
     rating: "",
     reviewCount: "",
+    inStock: true,
+    variants: "",
 };
+
+const variantsToLines = (variants: ProductVariant[]) =>
+    variants.map((variant) => `${variant.label} | ${variant.price}`).join("\n");
+
+const linesToVariants = (value: string): ProductVariant[] =>
+    value
+        .split("\n")
+        .map((line) => line.trim())
+        .filter(Boolean)
+        .map((line) => {
+            const [label, price] = line.split("|");
+            return { label: (label ?? "").trim(), price: Number((price ?? "").trim()) };
+        })
+        .filter((variant) => variant.label && Number.isFinite(variant.price));
 
 const toForm = (product: Product): FormState => ({
     slug: product.slug,
@@ -87,6 +105,8 @@ const toForm = (product: Product): FormState => ({
     newArrival: product.newArrival,
     rating: product.rating === undefined ? "" : String(product.rating),
     reviewCount: product.reviewCount === undefined ? "" : String(product.reviewCount),
+    inStock: product.inStock,
+    variants: variantsToLines(product.variants),
 });
 
 const toLines = (value: string) =>
@@ -112,6 +132,8 @@ const toPayload = (form: FormState): ProductPayload => ({
     newArrival: form.newArrival,
     rating: form.rating.trim() === "" ? null : Number(form.rating),
     reviewCount: form.reviewCount.trim() === "" ? null : Number(form.reviewCount),
+    inStock: form.inStock,
+    variants: linesToVariants(form.variants),
 });
 
 interface ProductFormProps {
@@ -376,6 +398,18 @@ const ProductForm = ({ product, categories, submitting, onSubmit, onCancel }: Pr
 
                 <Grid size={12}>
                     <TextField
+                        label="Variants"
+                        value={form.variants}
+                        onChange={(event) => set("variants", event.target.value)}
+                        fullWidth
+                        multiline
+                        minRows={3}
+                        helperText="One per line: Label | Price — e.g. 30ml | 499. Leave blank if this product has no size/pack options."
+                    />
+                </Grid>
+
+                <Grid size={12}>
+                    <TextField
                         label="How to use"
                         value={form.howToUse}
                         onChange={(event) => set("howToUse", event.target.value)}
@@ -409,6 +443,15 @@ const ProductForm = ({ product, categories, submitting, onSubmit, onCancel }: Pr
 
                 <Grid size={{ xs: 12, sm: 6 }}>
                     <Stack direction="row" useFlexGap sx={{ flexWrap: "wrap" }}>
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    checked={form.inStock}
+                                    onChange={(event) => set("inStock", event.target.checked)}
+                                />
+                            }
+                            label="In stock"
+                        />
                         <FormControlLabel
                             control={
                                 <Switch

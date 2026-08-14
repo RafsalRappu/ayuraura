@@ -10,6 +10,8 @@ import App from "./App";
 import { ThemePresetProvider } from "./theme/ThemePresetProvider";
 
 import { ProductsProvider } from "./data/ProductsProvider";
+import { CartProvider } from "./data/CartProvider";
+import { CustomerAuthProvider } from "./data/CustomerAuthProvider";
 
 import "./index.css";
 
@@ -19,7 +21,11 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
       <BrowserRouter>
         <ThemePresetProvider>
           <ProductsProvider>
-            <App />
+            <CustomerAuthProvider>
+              <CartProvider>
+                <App />
+              </CartProvider>
+            </CustomerAuthProvider>
           </ProductsProvider>
         </ThemePresetProvider>
       </BrowserRouter>

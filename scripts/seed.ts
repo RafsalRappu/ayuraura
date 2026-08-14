@@ -50,13 +50,21 @@ const createSchema = () => sql`
         new_arrival       BOOLEAN NOT NULL DEFAULT FALSE,
         rating            REAL,
         review_count      INTEGER,
+        in_stock          BOOLEAN NOT NULL DEFAULT TRUE,
+        variants          JSONB NOT NULL DEFAULT '[]'::jsonb,
         created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
 `;
 
+const addNewColumns = async () => {
+    await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS in_stock BOOLEAN NOT NULL DEFAULT TRUE`;
+    await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS variants JSONB NOT NULL DEFAULT '[]'::jsonb`;
+};
+
 const main = async () => {
     await createSchema();
+    await addNewColumns();
     console.log("Schema ready.");
 
     let inserted = 0;
@@ -81,6 +89,8 @@ const main = async () => {
             product.newArrival,
             product.rating ?? null,
             product.reviewCount ?? null,
+            product.inStock ?? true,
+            JSON.stringify(product.variants ?? []),
         ];
 
         const conflictAction = force
@@ -100,6 +110,8 @@ const main = async () => {
                    new_arrival = EXCLUDED.new_arrival,
                    rating = EXCLUDED.rating,
                    review_count = EXCLUDED.review_count,
+                   in_stock = EXCLUDED.in_stock,
+                   variants = EXCLUDED.variants,
                    updated_at = NOW()`
             : "DO NOTHING";
 
@@ -107,8 +119,8 @@ const main = async () => {
             `INSERT INTO products (
                  slug, name, price, category, image, icon,
                  short_description, description, ingredients, benefits, how_to_use,
-                 featured, bestseller, new_arrival, rating, review_count
-             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9::jsonb, $10::jsonb, $11, $12, $13, $14, $15, $16)
+                 featured, bestseller, new_arrival, rating, review_count, in_stock, variants
+             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9::jsonb, $10::jsonb, $11, $12, $13, $14, $15, $16, $17, $18::jsonb)
              ON CONFLICT (slug) ${conflictAction}
              RETURNING (xmax = 0) AS was_inserted`,
             values

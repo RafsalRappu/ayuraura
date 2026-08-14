@@ -48,6 +48,8 @@ const updateProduct = async (slug: string, input: ProductInput, res: VercelRespo
                 new_arrival       = ${input.newArrival},
                 rating            = ${input.rating},
                 review_count      = ${input.reviewCount},
+                in_stock          = ${input.inStock},
+                variants          = ${JSON.stringify(input.variants)}::jsonb,
                 updated_at        = NOW()
             WHERE slug = ${slug}
             RETURNING ${sql.unsafe(PRODUCT_COLUMNS)}

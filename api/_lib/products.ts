@@ -1,5 +1,5 @@
-import type { Product } from "../../src/types/product.js";
-import type { Result } from "./http.js";
+import type { Product, ProductVariant } from "../../src/types/product";
+import type { Result } from "./http";
 
 export const PRODUCT_ICONS = ["lip", "face", "eye", "hair", "body"] as const;
 
@@ -7,7 +7,7 @@ export const PRODUCT_ICONS = ["lip", "face", "eye", "hair", "body"] as const;
 export const PRODUCT_COLUMNS = `
     id, slug, name, price, category, image, icon,
     short_description, description, ingredients, benefits, how_to_use,
-    featured, bestseller, new_arrival, rating, review_count
+    featured, bestseller, new_arrival, rating, review_count, in_stock, variants
 `;
 
 export interface ProductRow {
@@ -28,10 +28,23 @@ export interface ProductRow {
     new_arrival: boolean;
     rating: number | string | null;
     review_count: number | null;
+    in_stock: boolean;
+    variants: unknown;
 }
 
 const toStringArray = (value: unknown): string[] =>
     Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
+
+const toVariantArray = (value: unknown): ProductVariant[] =>
+    Array.isArray(value)
+        ? value.filter(
+            (item): item is ProductVariant =>
+                typeof item === "object" &&
+                item !== null &&
+                typeof (item as ProductVariant).label === "string" &&
+                typeof (item as ProductVariant).price === "number"
+        )
+        : [];
 
 export const toProduct = (row: ProductRow): Product => ({
     id: row.id,
@@ -53,6 +66,8 @@ export const toProduct = (row: ProductRow): Product => ({
     newArrival: row.new_arrival,
     ...(row.rating === null ? {} : { rating: Number(row.rating) }),
     ...(row.review_count === null ? {} : { reviewCount: row.review_count }),
+    inStock: row.in_stock,
+    variants: toVariantArray(row.variants),
 });
 
 export const slugify = (value: string) =>
@@ -82,6 +97,8 @@ export interface ProductInput {
     newArrival: boolean;
     rating: number | null;
     reviewCount: number | null;
+    inStock: boolean;
+    variants: ProductVariant[];
 }
 
 const MAX = {
@@ -94,6 +111,9 @@ const MAX = {
     image: 2048,
     listItems: 30,
     listItemLength: 80,
+    variants: 20,
+    variantLabelLength: 60,
+    price: 10_000_000,
 };
 
 const text = (value: unknown) => (typeof value === "string" ? value.trim() : "");
@@ -102,8 +122,8 @@ const parseList = (value: unknown, field: string, errors: string[]): string[] =>
     const raw = Array.isArray(value)
         ? value
         : typeof value === "string"
-          ? value.split(/\r?\n|,/)
-          : [];
+            ? value.split(/\r?\n|,/)
+            : [];
 
     const items = raw
         .map((item) => (typeof item === "string" ? item.trim() : ""))
@@ -151,6 +171,43 @@ const parseImage = (value: unknown, errors: string[]): string | null => {
     return image;
 };
 
+/** Parses "Label | Price" lines (the admin form's variants textarea) into variant objects. */
+const parseVariants = (value: unknown, errors: string[]): ProductVariant[] => {
+    const raw = Array.isArray(value)
+        ? value
+        : typeof value === "string"
+            ? value.split(/\r?\n/)
+            : [];
+
+    const lines = raw
+        .map((item) => (typeof item === "string" ? item.trim() : ""))
+        .filter((item) => item.length > 0);
+
+    if (lines.length > MAX.variants) {
+        errors.push(`Variants cannot have more than ${MAX.variants} entries.`);
+    }
+
+    const variants: ProductVariant[] = [];
+    for (const line of lines.slice(0, MAX.variants)) {
+        const [labelPart, pricePart] = line.split("|");
+        const label = (labelPart ?? "").trim();
+        const price = Number((pricePart ?? "").trim());
+
+        if (!label || label.length > MAX.variantLabelLength) {
+            errors.push(`Each variant label must be 1–${MAX.variantLabelLength} characters ("${line}").`);
+            continue;
+        }
+        if (!Number.isFinite(price) || !Number.isInteger(price) || price < 0 || price > MAX.price) {
+            errors.push(`Variant "${label}" needs a whole-number price between 0 and ${MAX.price}.`);
+            continue;
+        }
+
+        variants.push({ label, price });
+    }
+
+    return variants;
+};
+
 /** Validates and normalises an admin-submitted product payload. */
 export const parseProductInput = (body: Record<string, unknown>): Result<ProductInput> => {
     const errors: string[] = [];
@@ -164,8 +221,8 @@ export const parseProductInput = (body: Record<string, unknown>): Result<Product
     else if (slug.length > MAX.slug) errors.push(`Slug must be ${MAX.slug} characters or fewer.`);
 
     const priceRaw = typeof body.price === "number" ? body.price : Number(text(body.price));
-    if (!Number.isFinite(priceRaw) || !Number.isInteger(priceRaw) || priceRaw < 0 || priceRaw > 10_000_000) {
-        errors.push("Price must be a whole number of rupees between 0 and 10,000,000.");
+    if (!Number.isFinite(priceRaw) || !Number.isInteger(priceRaw) || priceRaw < 0 || priceRaw > MAX.price) {
+        errors.push(`Price must be a whole number of rupees between 0 and ${MAX.price}.`);
     }
 
     const category = text(body.category);
@@ -206,6 +263,10 @@ export const parseProductInput = (body: Record<string, unknown>): Result<Product
         errors.push("Review count must be a whole number.");
     }
 
+    // Absent means "not sent by an older caller" — default new products to in stock.
+    const inStock = body.inStock === undefined ? true : body.inStock === true || body.inStock === "true";
+    const variants = parseVariants(body.variants, errors);
+
     if (errors.length) return { ok: false, errors };
 
     return {
@@ -227,6 +288,8 @@ export const parseProductInput = (body: Record<string, unknown>): Result<Product
             newArrival: body.newArrival === true || body.newArrival === "true",
             rating,
             reviewCount: reviewCount === null ? null : Math.round(reviewCount),
+            inStock,
+            variants,
         },
     };
 };
