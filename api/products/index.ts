@@ -30,13 +30,13 @@ const createProduct = async (input: ProductInput, res: VercelResponse) => {
             INSERT INTO products (
                 slug, name, price, category, image, icon,
                 short_description, description, ingredients, benefits, how_to_use,
-                featured, bestseller, new_arrival, rating, review_count
+                featured, bestseller, new_arrival, rating, review_count, in_stock, variants
             ) VALUES (
                 ${input.slug}, ${input.name}, ${input.price}, ${input.category},
                 ${input.image}, ${input.icon}, ${input.shortDescription}, ${input.description},
                 ${JSON.stringify(input.ingredients)}::jsonb, ${JSON.stringify(input.benefits)}::jsonb,
                 ${input.howToUse}, ${input.featured}, ${input.bestseller}, ${input.newArrival},
-                ${input.rating}, ${input.reviewCount}
+                ${input.rating}, ${input.reviewCount}, ${input.inStock}, ${JSON.stringify(input.variants)}::jsonb
             )
             RETURNING ${sql.unsafe(PRODUCT_COLUMNS)}
         `) as ProductRow[];

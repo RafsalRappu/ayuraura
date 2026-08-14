@@ -1,3 +1,8 @@
+export interface ProductVariant {
+    label: string;
+    price: number;
+}
+
 export interface Product {
     id: number;
     name: string;
@@ -16,4 +21,6 @@ export interface Product {
     newArrival: boolean;
     rating?: number;
     reviewCount?: number;
+    inStock: boolean;
+    variants: ProductVariant[];
 }

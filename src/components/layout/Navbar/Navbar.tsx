@@ -7,6 +7,7 @@ import {
     Box,
     Typography,
     Button,
+    Badge,
     Container,
     IconButton,
     Drawer,
@@ -23,9 +24,15 @@ import { useTheme } from "@mui/material/styles";
 import MenuIcon from "@mui/icons-material/Menu";
 import SpaIcon from "@mui/icons-material/Spa";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
+import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
+import PersonOutlineIcon from "@mui/icons-material/PersonOutlined";
 
 import ThemeSwitcher from "../../common/ThemeSwitcher";
+import CartDrawer from "../../cart/CartDrawer";
 import { whatsappLink } from "../../../config/site";
+import { useCart } from "../../../data/useCart";
+import { cartCount } from "../../../data/cart";
+import { useCustomerAuth } from "../../../data/useCustomerAuth";
 
 import styles from "./Navbar.module.css";
 
@@ -44,6 +51,24 @@ const Navbar = () => {
     const location = useLocation();
 
     const [open, setOpen] = useState(false);
+    const [cartOpen, setCartOpen] = useState(false);
+    const { items } = useCart();
+    const itemCount = cartCount(items);
+    const { customer } = useCustomerAuth();
+
+    const cartButton = (
+        <IconButton onClick={() => setCartOpen(true)} aria-label="Open cart">
+            <Badge badgeContent={itemCount} color="secondary">
+                <ShoppingCartOutlinedIcon />
+            </Badge>
+        </IconButton>
+    );
+
+    const accountButton = (
+        <IconButton component={RouterLink} to="/account" aria-label={customer ? "My account" : "Sign in"}>
+            <PersonOutlineIcon />
+        </IconButton>
+    );
 
     return (
         <>
@@ -94,6 +119,10 @@ const Navbar = () => {
                                 <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
                                     <ThemeSwitcher />
 
+                                    {accountButton}
+
+                                    {cartButton}
+
                                     <Button
                                         variant="contained"
                                         startIcon={<WhatsAppIcon />}
@@ -117,6 +146,10 @@ const Navbar = () => {
                         {isMobile && (
                             <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
                                 <ThemeSwitcher />
+
+                                {accountButton}
+
+                                {cartButton}
 
                                 <IconButton onClick={() => setOpen(true)} aria-label="Open navigation menu">
                                     <MenuIcon />
@@ -163,6 +196,8 @@ const Navbar = () => {
                     </List>
                 </Box>
             </Drawer>
+
+            <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />
         </>
     );
 };

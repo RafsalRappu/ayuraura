@@ -1,7 +1,19 @@
 ﻿import { useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Alert, Box, Drawer, Grid, IconButton, Typography, useTheme, useMediaQuery } from "@mui/material";
+import {
+    Alert,
+    Box,
+    Drawer,
+    Grid,
+    IconButton,
+    InputAdornment,
+    TextField,
+    Typography,
+    useTheme,
+    useMediaQuery,
+} from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
+import SearchIcon from "@mui/icons-material/Search";
 
 import PageContainer from "../../components/common/PageContainer";
 import ProductsSidebar from "../../components/products/ProductsSidebar/ProductsSidebar";
@@ -23,6 +35,15 @@ const Products = () => {
 
     const category = searchParams.get("category") ?? "all";
     const tag = searchParams.get("tag") ?? "all";
+    const query = searchParams.get("q") ?? "";
+
+    const setQuery = (value: string) => {
+        setSearchParams((params) => {
+            if (value.trim() === "") params.delete("q");
+            else params.set("q", value);
+            return params;
+        });
+    };
 
     const setCategory = (value: string) => {
         setSearchParams((params) => {
@@ -46,6 +67,8 @@ const Products = () => {
     );
 
     const filteredProducts = useMemo(() => {
+        const q = query.trim().toLowerCase();
+
         return products.filter((product) => {
             const matchesCategory = category === "all" || product.category === category;
             const matchesTag =
@@ -53,10 +76,16 @@ const Products = () => {
                 (tag === "featured" && product.featured) ||
                 (tag === "bestseller" && product.bestseller) ||
                 (tag === "newArrival" && product.newArrival);
+            const matchesQuery =
+                q === "" ||
+                product.name.toLowerCase().includes(q) ||
+                product.shortDescription.toLowerCase().includes(q) ||
+                product.description.toLowerCase().includes(q) ||
+                product.ingredients.some((ingredient) => ingredient.toLowerCase().includes(q));
 
-            return matchesCategory && matchesTag;
+            return matchesCategory && matchesTag && matchesQuery;
         });
-    }, [products, category, tag]);
+    }, [products, category, tag, query]);
 
     return (
         <PageContainer>
@@ -77,6 +106,23 @@ const Products = () => {
                         subtitle="Browse our Ayurvedic skincare range for naturally glowing skin."
                     />
                 </Box>
+
+                <TextField
+                    value={query}
+                    onChange={(event) => setQuery(event.target.value)}
+                    placeholder="Search products…"
+                    size="small"
+                    sx={{ minWidth: { xs: "100%", sm: 260 } }}
+                    slotProps={{
+                        input: {
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <SearchIcon fontSize="small" />
+                                </InputAdornment>
+                            ),
+                        },
+                    }}
+                />
 
                 {isMobile && (
                     <IconButton onClick={() => setSidebarOpen(true)}>
@@ -121,7 +167,9 @@ const Products = () => {
 
                     {status !== "loading" && filteredProducts.length === 0 && (
                         <Typography sx={{ textAlign: "center", color: "text.secondary", py: 8 }}>
-                            No products match this filter yet — try another category.
+                            {query.trim()
+                                ? `No products match "${query.trim()}" — try a different search or filter.`
+                                : "No products match this filter yet — try another category."}
                         </Typography>
                     )}
                 </Box>

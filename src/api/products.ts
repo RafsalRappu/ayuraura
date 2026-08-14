@@ -1,4 +1,4 @@
-import type { Product } from "../types/product";
+import type { Product, ProductVariant } from "../types/product";
 import { request } from "./client";
 
 /** Payload accepted by the create/update endpoints. */
@@ -19,6 +19,8 @@ export interface ProductPayload {
     newArrival: boolean;
     rating?: number | null;
     reviewCount?: number | null;
+    inStock: boolean;
+    variants: ProductVariant[];
 }
 
 const jsonInit = (method: string, body: unknown): RequestInit => ({
