@@ -19,16 +19,23 @@ export const methodNotAllowed = (res: VercelResponse, allowed: string[]) => {
 /**
  * Vercel's Node helper leaves non-JSON payloads as a Buffer, but that is not
  * guaranteed across runtimes — fall back to draining the request stream.
+ *
+ * Uses the `'data'`/`'end'` event API rather than `for await...of req`: the
+ * local dev server (`vercel dev`) replays an already-parsed body (e.g. JSON)
+ * back onto `req` by overriding `req.on('data'|'end', ...)` specifically —
+ * async iteration goes through the stream's `'readable'` event instead, which
+ * isn't part of that replay, and silently yields an empty body.
  */
-export const readRawBody = async (req: VercelRequest): Promise<Buffer> => {
-    if (Buffer.isBuffer(req.body)) return req.body;
-    if (typeof req.body === "string") return Buffer.from(req.body);
+export const readRawBody = (req: VercelRequest): Promise<Buffer> => {
+    if (Buffer.isBuffer(req.body)) return Promise.resolve(req.body);
+    if (typeof req.body === "string") return Promise.resolve(Buffer.from(req.body));
 
-    const chunks: Buffer[] = [];
-    for await (const chunk of req) {
-        chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk as string));
-    }
-    return Buffer.concat(chunks);
+    return new Promise((resolve, reject) => {
+        const chunks: Buffer[] = [];
+        req.on("data", (chunk: Buffer | string) => chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)));
+        req.on("end", () => resolve(Buffer.concat(chunks)));
+        req.on("error", reject);
+    });
 };
 
 export const asRecord = (body: unknown): Record<string, unknown> => {

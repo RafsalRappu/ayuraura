@@ -7,6 +7,8 @@ import {
     Button,
     CircularProgress,
     Container,
+    Tab,
+    Tabs,
     Toolbar,
     Typography,
 } from "@mui/material";
@@ -18,7 +20,13 @@ import SEO from "../../components/common/SEO";
 import { errorMessage } from "../../api/client";
 import { fetchSession, logout } from "../../api/admin";
 import AdminDashboard from "./AdminDashboard";
+import AdminOrders from "./AdminOrders";
+import AdminCategories from "./AdminCategories";
+import AdminCoupons from "./AdminCoupons";
+import AdminReviews from "./AdminReviews";
 import AdminLogin from "./AdminLogin";
+
+type AdminTab = "products" | "orders" | "categories" | "coupons" | "reviews";
 
 type SessionState =
     | { status: "loading" }
@@ -27,6 +35,7 @@ type SessionState =
 
 const Admin = () => {
     const [session, setSession] = useState<SessionState>({ status: "loading" });
+    const [tab, setTab] = useState<AdminTab>("products");
 
     const refreshSession = useCallback(async () => {
         setSession({ status: "loading" });
@@ -116,7 +125,25 @@ const Admin = () => {
 
                 {session.status === "ready" &&
                     (session.authenticated ? (
-                        <AdminDashboard />
+                        <>
+                            <Tabs
+                                value={tab}
+                                onChange={(_, value: AdminTab) => setTab(value)}
+                                sx={{ mb: 3, borderBottom: 1, borderColor: "divider" }}
+                            >
+                                <Tab label="Products" value="products" />
+                                <Tab label="Orders" value="orders" />
+                                <Tab label="Categories" value="categories" />
+                                <Tab label="Coupons" value="coupons" />
+                                <Tab label="Reviews" value="reviews" />
+                            </Tabs>
+
+                            {tab === "products" && <AdminDashboard />}
+                            {tab === "orders" && <AdminOrders />}
+                            {tab === "categories" && <AdminCategories />}
+                            {tab === "coupons" && <AdminCoupons />}
+                            {tab === "reviews" && <AdminReviews />}
+                        </>
                     ) : (
                         <AdminLogin
                             configured={session.configured}

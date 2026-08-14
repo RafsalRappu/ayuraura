@@ -6,8 +6,11 @@ import type { Product } from "../types/product";
  * that request fails, and the payload `npm run db:seed` writes into an empty
  * database. Images are referenced from `public/` so the seed script (which runs
  * outside Vite) resolves the same paths the browser does.
+ *
+ * `inStock`/`variants` are uniform across this fixed catalogue, so they're
+ * applied once below rather than repeated on every entry.
  */
-export const seedProducts: Product[] = [
+const catalogueEntries: Omit<Product, "inStock" | "variants">[] = [
     {
         id: 1,
         slug: "herbal-lip-balm",
@@ -220,6 +223,12 @@ export const seedProducts: Product[] = [
         reviewCount: 29,
     },
 ];
+
+export const seedProducts: Product[] = catalogueEntries.map((product) => ({
+    ...product,
+    inStock: true,
+    variants: [],
+}));
 
 export const findBySlug = (catalogue: Product[], slug: string) =>
     catalogue.find((product) => product.slug === slug);
