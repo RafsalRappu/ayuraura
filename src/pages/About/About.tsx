@@ -13,7 +13,7 @@ import { siteConfig } from "../../config/site";
 import { breadcrumbSchema } from "../../utils/structuredData";
 
 const values = [
-    "Every formulation is reviewed by a qualified BAMS Ayurvedic doctor before it ships.",
+    "Every formulation is reviewed by a qualified Ayurvedic practitioner before it ships.",
     "We source herbs and oils from trusted small-batch suppliers, never mass-market fillers.",
     "No parabens, sulphates, synthetic fragrance or added preservatives — ever.",
     "Made fresh in small batches so what you receive is never sitting in a warehouse for months.",
@@ -29,7 +29,7 @@ const About = () => {
         <PageContainer>
             <SEO
                 title="About Us"
-                description="Learn the story behind AyuAura — Ayurvedic skincare formulated by a qualified BAMS doctor, made in small batches with traditional, chemical-free ingredients."
+                description="Learn the story behind AyuAura — Ayurvedic skincare formulated by a qualified Ayurvedic practitioner, made in small batches with traditional, chemical-free ingredients."
                 path="/about"
                 jsonLd={breadcrumbSchema(crumbs)}
             />
@@ -49,10 +49,10 @@ const About = () => {
                     </Typography>
 
                     <Typography color="text.secondary" sx={{ mb: 2 }}>
-                        {siteConfig.name} was founded by a qualified BAMS (Bachelor of Ayurvedic Medicine
-                        and Surgery) practitioner who spent years prescribing traditional herbal remedies
-                        to patients — and kept hearing the same frustration: modern skincare shelves are
-                        full of long ingredient lists nobody can pronounce.
+                        {siteConfig.name} was founded by a qualified Ayurvedic practitioner who spent
+                        years prescribing traditional herbal remedies to patients — and kept hearing the
+                        same frustration: modern skincare shelves are full of long ingredient lists
+                        nobody can pronounce.
                     </Typography>
 
                     <Typography color="text.secondary" sx={{ mb: 2 }}>
@@ -79,7 +79,7 @@ const About = () => {
                         <VerifiedUserOutlinedIcon color="primary" sx={{ fontSize: 56, mb: 2 }} />
 
                         <Typography variant="h5" gutterBottom>
-                            Formulated by a BAMS Doctor
+                            Formulated by an Ayurvedic Practitioner
                         </Typography>
 
                         <Typography color="text.secondary">

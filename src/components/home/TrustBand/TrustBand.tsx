@@ -9,7 +9,7 @@ import PageContainer from "../../common/PageContainer";
 const stats = [
     {
         icon: VerifiedUserOutlinedIcon,
-        title: "BAMS Doctor Formulated",
+        title: "Ayurvedic Practitioner Formulated",
         description: "Every product is developed by a qualified Ayurvedic physician.",
     },
     {

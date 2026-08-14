@@ -75,10 +75,12 @@ const createOrder = async (req: VercelRequest, res: VercelResponse) => {
         INSERT INTO orders (
             public_id, items, amount, currency,
             customer_name, customer_phone, customer_email, customer_address,
+            customer_address_line2, customer_city, customer_state, customer_pincode,
             coupon_code, discount_amount, customer_id
         ) VALUES (
             ${randomUUID()}, ${JSON.stringify(items)}::jsonb, ${amount}, 'INR',
-            ${customer.name}, ${customer.phone}, ${customer.email ?? null}, ${customer.address ?? null},
+            ${customer.name}, ${customer.phone}, ${customer.email ?? null}, ${customer.addressLine1 ?? null},
+            ${customer.addressLine2 ?? null}, ${customer.city ?? null}, ${customer.state ?? null}, ${customer.pincode ?? null},
             ${couponCode}, ${discountAmount}, ${customerId}
         )
         RETURNING ${sql.unsafe(ORDER_COLUMNS)}
