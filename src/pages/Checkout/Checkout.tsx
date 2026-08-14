@@ -29,7 +29,11 @@ const Checkout = () => {
     const [name, setName] = useState("");
     const [phone, setPhone] = useState("");
     const [email, setEmail] = useState("");
-    const [address, setAddress] = useState("");
+    const [addressLine1, setAddressLine1] = useState("");
+    const [addressLine2, setAddressLine2] = useState("");
+    const [city, setCity] = useState("");
+    const [state, setState] = useState("");
+    const [pincode, setPincode] = useState("");
 
     // Prefill from a signed-in account — still editable, and only overwrites
     // fields the shopper hasn't already started typing into.
@@ -150,7 +154,16 @@ const Checkout = () => {
         try {
             const placedOrder = await createOrder(
                 toItemInputs(),
-                { name, phone, ...(email ? { email } : {}), ...(address ? { address } : {}) },
+                {
+                    name,
+                    phone,
+                    ...(email ? { email } : {}),
+                    ...(addressLine1 ? { addressLine1 } : {}),
+                    ...(addressLine2 ? { addressLine2 } : {}),
+                    ...(city ? { city } : {}),
+                    ...(state ? { state } : {}),
+                    ...(pincode ? { pincode } : {}),
+                },
                 appliedCoupon?.code
             );
             // Set together: `order` is what keeps the empty-cart redirect guard
@@ -215,14 +228,43 @@ const Checkout = () => {
                                     fullWidth
                                 />
                                 <TextField
-                                    label="Delivery address (optional)"
-                                    value={address}
-                                    onChange={(event) => setAddress(event.target.value)}
+                                    label="Address line 1 (optional)"
+                                    value={addressLine1}
+                                    onChange={(event) => setAddressLine1(event.target.value)}
                                     fullWidth
-                                    multiline
-                                    minRows={2}
                                     helperText="You can also arrange delivery details over WhatsApp after ordering."
                                 />
+                                <TextField
+                                    label="Address line 2 (optional)"
+                                    value={addressLine2}
+                                    onChange={(event) => setAddressLine2(event.target.value)}
+                                    fullWidth
+                                />
+                                <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+                                    <TextField
+                                        label="City (optional)"
+                                        value={city}
+                                        onChange={(event) => setCity(event.target.value)}
+                                        fullWidth
+                                        sx={{ flex: 1 }}
+                                    />
+                                    <TextField
+                                        label="State (optional)"
+                                        value={state}
+                                        onChange={(event) => setState(event.target.value)}
+                                        fullWidth
+                                        sx={{ flex: 1 }}
+                                    />
+                                    <TextField
+                                        label="PIN code"
+                                        value={pincode}
+                                        onChange={(event) => setPincode(event.target.value.replace(/\D/g, ""))}
+                                        fullWidth
+                                        helperText="Optional"
+                                        sx={{ flex: 1.3, minWidth: 120 }}
+                                        slotProps={{ htmlInput: { maxLength: 6, inputMode: "numeric" } }}
+                                    />
+                                </Stack>
 
                                 {appliedCoupon ? (
                                     <Alert

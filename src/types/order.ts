@@ -26,7 +26,11 @@ export interface AdminOrder extends Order {
     customerName: string;
     customerPhone: string;
     customerEmail?: string;
-    customerAddress?: string;
+    customerAddressLine1?: string;
+    customerAddressLine2?: string;
+    customerCity?: string;
+    customerState?: string;
+    customerPincode?: string;
     razorpayOrderId?: string;
     razorpayPaymentId?: string;
     adminNote?: string;
@@ -39,7 +43,11 @@ export interface CheckoutCustomer {
     name: string;
     phone: string;
     email?: string;
-    address?: string;
+    addressLine1?: string;
+    addressLine2?: string;
+    city?: string;
+    state?: string;
+    pincode?: string;
 }
 
 /** What the client sends to create an order — no price/name, just what to buy. */

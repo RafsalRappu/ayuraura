@@ -63,7 +63,7 @@ const Hero = () => {
                                     fontWeight: 400,
                                 }}
                             >
-                                Crafted by a qualified BAMS Ayurvedic Doctor using
+                                Crafted by a qualified Ayurvedic practitioner using
                                 traditional herbal ingredients that nourish your skin
                                 naturally.
                             </Typography>

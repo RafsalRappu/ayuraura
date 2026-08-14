@@ -286,9 +286,20 @@ const AdminOrders = ({ initialStatusFilter }: AdminOrdersProps) => {
                                         {selected.customerEmail}
                                     </Typography>
                                 )}
-                                {selected.customerAddress && (
+                                {selected.customerAddressLine1 && (
                                     <Typography variant="body2" color="text.secondary">
-                                        {selected.customerAddress}
+                                        {selected.customerAddressLine1}
+                                    </Typography>
+                                )}
+                                {selected.customerAddressLine2 && (
+                                    <Typography variant="body2" color="text.secondary">
+                                        {selected.customerAddressLine2}
+                                    </Typography>
+                                )}
+                                {(selected.customerCity || selected.customerState || selected.customerPincode) && (
+                                    <Typography variant="body2" color="text.secondary">
+                                        {[selected.customerCity, selected.customerState].filter(Boolean).join(", ")}
+                                        {selected.customerPincode ? ` – ${selected.customerPincode}` : ""}
                                     </Typography>
                                 )}
                             </Box>

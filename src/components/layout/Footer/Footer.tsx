@@ -47,8 +47,8 @@ const Footer = () => {
                             </Stack>
 
                             <Typography variant="body2" sx={{ mb: 3, color: "rgba(255,255,255,0.7)" }}>
-                                Handcrafted Ayurvedic skincare formulated by a qualified BAMS doctor —
-                                natural ingredients, traditional recipes, made in small batches.
+                                Handcrafted Ayurvedic skincare formulated by a qualified Ayurvedic
+                                practitioner — natural ingredients, traditional recipes, made in small batches.
                             </Typography>
 
                             <Stack direction="row" spacing={1}>

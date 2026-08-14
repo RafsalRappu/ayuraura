@@ -17,6 +17,7 @@ export const STATUSES = ["pending", "paid", "failed", "cancelled"] as const;
 export const ORDER_COLUMNS = `
     id, public_id, items, amount, currency,
     customer_name, customer_phone, customer_email, customer_address,
+    customer_address_line2, customer_city, customer_state, customer_pincode,
     status, razorpay_order_id, razorpay_payment_id, admin_note,
     coupon_code, discount_amount, customer_id,
     created_at, updated_at
@@ -32,6 +33,10 @@ export interface OrderRow {
     customer_phone: string;
     customer_email: string | null;
     customer_address: string | null;
+    customer_address_line2: string | null;
+    customer_city: string | null;
+    customer_state: string | null;
+    customer_pincode: string | null;
     status: string;
     razorpay_order_id: string | null;
     razorpay_payment_id: string | null;
@@ -74,7 +79,11 @@ export const toAdminOrder = (row: OrderRow): AdminOrder => ({
     customerName: row.customer_name,
     customerPhone: row.customer_phone,
     ...(row.customer_email ? { customerEmail: row.customer_email } : {}),
-    ...(row.customer_address ? { customerAddress: row.customer_address } : {}),
+    ...(row.customer_address ? { customerAddressLine1: row.customer_address } : {}),
+    ...(row.customer_address_line2 ? { customerAddressLine2: row.customer_address_line2 } : {}),
+    ...(row.customer_city ? { customerCity: row.customer_city } : {}),
+    ...(row.customer_state ? { customerState: row.customer_state } : {}),
+    ...(row.customer_pincode ? { customerPincode: row.customer_pincode } : {}),
     ...(row.razorpay_order_id ? { razorpayOrderId: row.razorpay_order_id } : {}),
     ...(row.razorpay_payment_id ? { razorpayPaymentId: row.razorpay_payment_id } : {}),
     ...(row.admin_note ? { adminNote: row.admin_note } : {}),
@@ -88,13 +97,16 @@ const MAX = {
     name: 120,
     phone: 20,
     email: 200,
-    address: 500,
+    addressLine: 200,
+    city: 100,
+    state: 100,
 };
 
 const text = (value: unknown) => (typeof value === "string" ? value.trim() : "");
 
 const PHONE_PATTERN = /^[0-9+()\-\s]{7,20}$/;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PINCODE_PATTERN = /^\d{6}$/;
 
 export interface ParsedOrderInput {
     items: CheckoutItemInput[];
@@ -154,9 +166,25 @@ export const parseOrderInput = (body: Record<string, unknown>): Result<ParsedOrd
         errors.push("Enter a valid email address.");
     }
 
-    const address = text(customerRecord.address);
-    if (address.length > MAX.address) {
-        errors.push(`Address must be ${MAX.address} characters or fewer.`);
+    const addressLine1 = text(customerRecord.addressLine1);
+    if (addressLine1.length > MAX.addressLine) {
+        errors.push(`Address line 1 must be ${MAX.addressLine} characters or fewer.`);
+    }
+
+    const addressLine2 = text(customerRecord.addressLine2);
+    if (addressLine2.length > MAX.addressLine) {
+        errors.push(`Address line 2 must be ${MAX.addressLine} characters or fewer.`);
+    }
+
+    const city = text(customerRecord.city);
+    if (city.length > MAX.city) errors.push(`City must be ${MAX.city} characters or fewer.`);
+
+    const state = text(customerRecord.state);
+    if (state.length > MAX.state) errors.push(`State must be ${MAX.state} characters or fewer.`);
+
+    const pincode = text(customerRecord.pincode);
+    if (pincode && !PINCODE_PATTERN.test(pincode)) {
+        errors.push("PIN code must be exactly 6 digits.");
     }
 
     if (errors.length) return { ok: false, errors };
@@ -169,7 +197,11 @@ export const parseOrderInput = (body: Record<string, unknown>): Result<ParsedOrd
                 name,
                 phone,
                 ...(email ? { email } : {}),
-                ...(address ? { address } : {}),
+                ...(addressLine1 ? { addressLine1 } : {}),
+                ...(addressLine2 ? { addressLine2 } : {}),
+                ...(city ? { city } : {}),
+                ...(state ? { state } : {}),
+                ...(pincode ? { pincode } : {}),
             },
             ...(couponCode ? { couponCode } : {}),
         },
