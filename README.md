@@ -71,6 +71,18 @@ Browser ──▶ ProductsProvider ──▶ GET /api/products ──▶ Neon Po
 | `GET` | `/api/admin/session` | public | Whether the caller is signed in, and whether admin is configured |
 | `POST` | `/api/admin/login` | public | Exchange the password for a session cookie |
 | `POST` | `/api/admin/logout` | public | Clear the session cookie |
+| `GET` | `/api/orders` | admin | List orders, newest first |
+| `POST` | `/api/orders` | public | Place an order — resolves prices/stock server-side, never trusts the client |
+| `GET` | `/api/orders/:id` | public | Fetch one order by its public id (for the confirmation page) |
+| `PATCH` | `/api/orders/:id` | admin | Manually set an order's status (e.g. after a WhatsApp-arranged payment) |
+| `POST` | `/api/orders/:id/pay` | public | Start (or resume) online payment for an order |
+| `POST` | `/api/orders/:id/verify` | public | Confirm a Razorpay payment's signature |
+| `POST` | `/api/webhooks/razorpay` | signature | Razorpay's server-to-server payment status callback |
+| `POST` | `/api/customers/signup` | public | Create a customer account (phone + password) |
+| `POST` | `/api/customers/login` | public | Sign in, sets the customer session cookie |
+| `POST` | `/api/customers/logout` | public | Clear the customer session cookie |
+| `GET` | `/api/customers/session` | public | Whether the caller is signed in, and whether accounts are configured |
+| `GET` | `/api/customers/orders` | customer | The signed-in customer's own order history |
 | `GET` | `/sitemap.xml` | public | Sitemap, generated from the live product list |
 
 Public reads are cached at the edge for 60 seconds, so a newly added product can
@@ -91,6 +103,44 @@ Images picked in the form are resized to at most 1400px and re-encoded before
 upload, which keeps them inside the serverless body limit and off the critical
 path of page loads.
 
+### Payments
+
+Checkout works two ways, and both write to the same `orders` table:
+
+- **WhatsApp** — the original flow. A cart or single product becomes one
+  itemized message; nothing to configure.
+- **Razorpay** — set `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET` and
+  `RAZORPAY_WEBHOOK_SECRET` (see [Environment](#environment)) to enable online
+  payment at `/checkout`. Leave them blank and the checkout page degrades
+  automatically: it still records the order, then shows the WhatsApp option
+  instead of the payment button — nothing breaks with unconfigured payments.
+
+An order's `id` in the API and in URLs like `/order/:id` is always an opaque,
+randomly generated id, not the sequential row number — it doubles as the only
+credential needed to view that one order, so it's never guessable.
+
+Once Razorpay is configured, an admin can still override an order's status by
+hand from the Orders tab (e.g. a payment arranged over WhatsApp instead) —
+that's a manual reconciliation tool only, with no other side effects (nothing
+in this codebase automatically adjusts stock from order status).
+
+### Customer accounts
+
+Signing in at `/account` is optional — checkout works fully as a guest either
+way. An account is phone + password only (no email/SMS provider is wired up,
+so **there is no password-reset flow** — a customer who forgets their
+password has no self-service recovery today). Signing in only affects two
+things: `/checkout` pre-fills your name/phone/email, and orders placed while
+signed in appear in your account's order history. Orders placed as a guest,
+or before creating an account, never retroactively appear there — order
+history is only ever linked at the moment an order is placed, never by
+matching a phone number afterward, since phone numbers aren't verified at
+signup.
+
+Customer sessions use their own signed cookie and their own secret
+(`CUSTOMER_SESSION_SECRET`), completely separate from the admin session — a
+customer account can never sign in to `/admin`, and vice versa.
+
 ## Environment
 
 Copy `.env.example` to **`.env`** and fill it in.
@@ -101,6 +151,9 @@ Copy `.env.example` to **`.env`** and fill it in.
 | `BLOB_READ_WRITE_TOKEN` | Vercel → Storage → Create Store → Blob |
 | `ADMIN_PASSWORD` | Choose one; set it in Vercel → Settings → Environment Variables |
 | `ADMIN_SESSION_SECRET` | `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"` |
+| `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` | Razorpay Dashboard → Settings → API Keys. Optional — see [Payments](#payments) |
+| `RAZORPAY_WEBHOOK_SECRET` | Razorpay Dashboard → Settings → Webhooks. Optional, only needed alongside the keys above |
+| `CUSTOMER_SESSION_SECRET` | `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"` — see [Customer accounts](#customer-accounts) |
 
 > **`.env`, not `.env.local`.** `vercel dev` reads `.env`; it ignores
 > `.env.local`. `vercel env pull` writes `.env.local`, which `npm run db:seed`
@@ -119,7 +172,9 @@ for you; set them yourself in both places.
 2. **Attach a blob store** the same way, for product images. That sets
    `BLOB_READ_WRITE_TOKEN`.
 3. **Add the admin secrets** under Settings → Environment Variables:
-   `ADMIN_PASSWORD` and `ADMIN_SESSION_SECRET`.
+   `ADMIN_PASSWORD` and `ADMIN_SESSION_SECRET`. Add `CUSTOMER_SESSION_SECRET`
+   the same way to enable customer accounts (optional — guest checkout works
+   without it).
 4. **Deploy.** The `products` table is created automatically on first use.
 5. **Load the existing catalogue:**
    ```bash

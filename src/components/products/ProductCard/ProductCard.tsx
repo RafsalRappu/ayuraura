@@ -1,10 +1,12 @@
-import { Card, CardContent, Typography, Chip, Stack } from "@mui/material";
+import { Card, CardContent, Typography, Chip, Stack, IconButton, Tooltip } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
 
 import CustomButton from "../../common/CustomButton";
 import StarRating from "../../common/StarRating";
 import ProductMedia from "../ProductMedia";
 import type { Product } from "../../../types/product";
+import { useCart } from "../../../data/useCart";
 
 import styles from "./ProductCard.module.css";
 
@@ -14,6 +16,7 @@ interface Props {
 
 const ProductCard = ({ product }: Props) => {
     const navigate = useNavigate();
+    const { addItem } = useCart();
 
     const badge = product.bestseller ? "Bestseller" : product.newArrival ? "New" : null;
 
@@ -29,6 +32,10 @@ const ProductCard = ({ product }: Props) => {
                         color={badge === "Bestseller" ? "secondary" : "success"}
                         size="small"
                     />
+                )}
+
+                {!product.inStock && (
+                    <Chip className={styles.stockBadge} label="Out of stock" size="small" />
                 )}
             </div>
 
@@ -53,13 +60,36 @@ const ProductCard = ({ product }: Props) => {
                     {product.shortDescription}
                 </Typography>
 
-                <CustomButton
-                    variant="contained"
-                    fullWidth
-                    onClick={() => navigate(`/products/${product.slug}`)}
-                >
-                    View Details
-                </CustomButton>
+                <Stack direction="row" spacing={1}>
+                    <CustomButton
+                        variant="contained"
+                        fullWidth
+                        onClick={() => navigate(`/products/${product.slug}`)}
+                    >
+                        View Details
+                    </CustomButton>
+
+                    <Tooltip title={product.inStock ? "Add to cart" : "Out of stock"}>
+                        <span>
+                            <IconButton
+                                color="primary"
+                                disabled={!product.inStock}
+                                aria-label={`Add ${product.name} to cart`}
+                                onClick={() =>
+                                    addItem({
+                                        slug: product.slug,
+                                        name: product.name,
+                                        price: product.price,
+                                        image: product.image,
+                                    })
+                                }
+                                sx={{ border: "1px solid", borderColor: "divider" }}
+                            >
+                                <AddShoppingCartIcon fontSize="small" />
+                            </IconButton>
+                        </span>
+                    </Tooltip>
+                </Stack>
             </CardContent>
         </Card>
     );

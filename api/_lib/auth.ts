@@ -1,5 +1,7 @@
-import { createHmac, timingSafeEqual } from "node:crypto";
+import { createHmac } from "node:crypto";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
+
+import { safeEqual } from "./crypto";
 
 const COOKIE_NAME = "ayuaura_admin";
 const SESSION_TTL_SECONDS = 7 * 24 * 60 * 60;
@@ -27,18 +29,6 @@ const base64url = (value: Buffer | string) =>
 const sign = (payload: string) =>
     base64url(createHmac("sha256", requireEnv("ADMIN_SESSION_SECRET")).update(payload).digest());
 
-/** Constant-time comparison that tolerates differing lengths. */
-const safeEqual = (a: string, b: string) => {
-    const bufferA = Buffer.from(a);
-    const bufferB = Buffer.from(b);
-    if (bufferA.length !== bufferB.length) {
-        // Still burn a comparison so failure timing does not leak the length.
-        timingSafeEqual(bufferA, bufferA);
-        return false;
-    }
-    return timingSafeEqual(bufferA, bufferB);
-};
-
 export const verifyPassword = (candidate: unknown) =>
     typeof candidate === "string" && safeEqual(candidate, requireEnv("ADMIN_PASSWORD"));
 
@@ -61,7 +51,7 @@ const buildCookie = (req: VercelRequest, value: string, maxAge: number) => {
 
 export const setSessionCookie = (req: VercelRequest, res: VercelResponse) => {
     const expiresAt = Math.floor(Date.now() / 1000) + SESSION_TTL_SECONDS;
-    const payload = base64url(JSON.stringify({ exp: expiresAt }));
+    const payload = base64url(JSON.stringify({ typ: "admin", exp: expiresAt }));
     res.setHeader("Set-Cookie", buildCookie(req, `${payload}.${sign(payload)}`, SESSION_TTL_SECONDS));
 };
 
@@ -83,8 +73,13 @@ export const isAuthenticated = (req: VercelRequest) => {
     if (!safeEqual(signature, sign(payload))) return false;
 
     try {
-        const { exp } = JSON.parse(Buffer.from(payload, "base64url").toString()) as { exp?: number };
-        return typeof exp === "number" && exp > Math.floor(Date.now() / 1000);
+        // `typ` guards against a cross-auth escalation if ADMIN_SESSION_SECRET
+        // and CUSTOMER_SESSION_SECRET were ever accidentally set to the same
+        // value — a customer's own validly-signed cookie would otherwise also
+        // verify here, since only the signature was checked above.
+        const parsed = JSON.parse(Buffer.from(payload, "base64url").toString()) as { typ?: string; exp?: number };
+        if (parsed.typ !== "admin") return false;
+        return typeof parsed.exp === "number" && parsed.exp > Math.floor(Date.now() / 1000);
     } catch {
         return false;
     }

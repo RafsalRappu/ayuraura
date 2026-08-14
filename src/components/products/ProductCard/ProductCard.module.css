@@ -49,3 +49,15 @@
     z-index:5;
 
 }
+
+.stockBadge{
+
+    position:absolute;
+
+    right:18px;
+
+    top:18px;
+
+    z-index:5;
+
+}
