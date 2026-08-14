@@ -9,6 +9,7 @@ import {
     DialogContent,
     DialogTitle,
     IconButton,
+    InputAdornment,
     Paper,
     Snackbar,
     Stack,
@@ -18,14 +19,17 @@ import {
     TableContainer,
     TableHead,
     TableRow,
+    TextField,
     Tooltip,
     Typography,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlined";
+import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import RefreshIcon from "@mui/icons-material/Refresh";
+import SearchIcon from "@mui/icons-material/Search";
 
 import { errorMessage } from "../../api/client";
 import { createProduct, deleteProduct, fetchProducts, updateProduct } from "../../api/products";
@@ -48,6 +52,7 @@ const AdminDashboard = () => {
     const [formError, setFormError] = useState<string | null>(null);
     const [deletingSlug, setDeletingSlug] = useState<string | null>(null);
     const [toast, setToast] = useState<string | null>(null);
+    const [query, setQuery] = useState("");
 
     const load = useCallback(async () => {
         setLoading(true);
@@ -69,6 +74,17 @@ const AdminDashboard = () => {
         () => Array.from(new Set(products.map((product) => product.category))).sort(),
         [products]
     );
+
+    const filteredProducts = useMemo(() => {
+        const q = query.trim().toLowerCase();
+        if (!q) return products;
+        return products.filter(
+            (product) =>
+                product.name.toLowerCase().includes(q) ||
+                product.category.toLowerCase().includes(q) ||
+                product.slug.toLowerCase().includes(q)
+        );
+    }, [products, query]);
 
     const handleSubmit = async (payload: ProductPayload) => {
         if (!editing) return;
@@ -154,6 +170,23 @@ const AdminDashboard = () => {
                 </Stack>
             </Stack>
 
+            <TextField
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Search by name, category or slug…"
+                size="small"
+                sx={{ mb: 3, minWidth: { xs: "100%", sm: 320 } }}
+                slotProps={{
+                    input: {
+                        startAdornment: (
+                            <InputAdornment position="start">
+                                <SearchIcon fontSize="small" />
+                            </InputAdornment>
+                        ),
+                    },
+                }}
+            />
+
             {loadError && (
                 <Alert severity="error" sx={{ mb: 3 }} onClose={() => setLoadError(null)}>
                     {loadError}
@@ -185,14 +218,27 @@ const AdminDashboard = () => {
                         {!loading && products.length === 0 && (
                             <TableRow>
                                 <TableCell colSpan={6} align="center" sx={{ py: 6, color: "text.secondary" }}>
-                                    No products yet — add the first one, or run{" "}
-                                    <code>npm run db:seed</code> to import the original catalogue.
+                                    <Inventory2OutlinedIcon sx={{ fontSize: 32, mb: 1, opacity: 0.4 }} />
+                                    <Typography variant="body2" color="text.secondary">
+                                        No products yet — add the first one, or run <code>npm run db:seed</code> to import
+                                        the original catalogue.
+                                    </Typography>
+                                </TableCell>
+                            </TableRow>
+                        )}
+
+                        {!loading && products.length > 0 && filteredProducts.length === 0 && (
+                            <TableRow>
+                                <TableCell colSpan={6} align="center" sx={{ py: 6, color: "text.secondary" }}>
+                                    <Typography variant="body2" color="text.secondary">
+                                        No products match &quot;{query.trim()}&quot;.
+                                    </Typography>
                                 </TableCell>
                             </TableRow>
                         )}
 
                         {!loading &&
-                            products.map((product) => (
+                            filteredProducts.map((product) => (
                                 <TableRow key={product.id} hover>
                                     <TableCell>
                                         <Box

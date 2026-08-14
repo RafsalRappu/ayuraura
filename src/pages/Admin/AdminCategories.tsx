@@ -20,6 +20,7 @@ import {
     Tooltip,
     Typography,
 } from "@mui/material";
+import CategoryOutlinedIcon from "@mui/icons-material/CategoryOutlined";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import RefreshIcon from "@mui/icons-material/Refresh";
@@ -158,7 +159,10 @@ const AdminCategories = () => {
                         {!loading && categories.length === 0 && (
                             <TableRow>
                                 <TableCell colSpan={3} align="center" sx={{ py: 6, color: "text.secondary" }}>
-                                    No categories yet — add a product with a category to get started.
+                                    <CategoryOutlinedIcon sx={{ fontSize: 32, mb: 1, opacity: 0.4 }} />
+                                    <Typography variant="body2" color="text.secondary">
+                                        No categories yet — add a product with a category to get started.
+                                    </Typography>
                                 </TableCell>
                             </TableRow>
                         )}

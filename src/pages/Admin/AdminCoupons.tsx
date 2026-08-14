@@ -28,6 +28,7 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import LocalOfferOutlinedIcon from "@mui/icons-material/LocalOfferOutlined";
 import RefreshIcon from "@mui/icons-material/Refresh";
 
 import { errorMessage } from "../../api/client";
@@ -225,7 +226,10 @@ const AdminCoupons = () => {
                         {!loading && coupons.length === 0 && (
                             <TableRow>
                                 <TableCell colSpan={6} align="center" sx={{ py: 6, color: "text.secondary" }}>
-                                    No coupons yet — add one to offer a discount at checkout.
+                                    <LocalOfferOutlinedIcon sx={{ fontSize: 32, mb: 1, opacity: 0.4 }} />
+                                    <Typography variant="body2" color="text.secondary">
+                                        No coupons yet — add one to offer a discount at checkout.
+                                    </Typography>
                                 </TableCell>
                             </TableRow>
                         )}
