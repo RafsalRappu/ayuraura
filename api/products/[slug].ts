@@ -1,10 +1,10 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
-import { requireAdmin } from "../_lib/auth";
-import { ensureSchema, getSql, isUniqueViolation } from "../_lib/db";
-import { asRecord, logFailure, methodNotAllowed, sendError, sendJson } from "../_lib/http";
-import { PRODUCT_COLUMNS, parseProductInput, toProduct } from "../_lib/products";
-import type { ProductInput, ProductRow } from "../_lib/products";
+import { requireAdmin } from "../_lib/auth.js";
+import { ensureSchema, getSql, isUniqueViolation } from "../_lib/db.js";
+import { asRecord, logFailure, methodNotAllowed, sendError, sendJson } from "../_lib/http.js";
+import { PRODUCT_COLUMNS, parseProductInput, toProduct } from "../_lib/products.js";
+import type { ProductInput, ProductRow } from "../_lib/products.js";
 
 const readSlug = (req: VercelRequest) => {
     const value = req.query.slug;

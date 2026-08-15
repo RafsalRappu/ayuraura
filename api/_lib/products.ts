@@ -38,12 +38,12 @@ const toStringArray = (value: unknown): string[] =>
 const toVariantArray = (value: unknown): ProductVariant[] =>
     Array.isArray(value)
         ? value.filter(
-              (item): item is ProductVariant =>
-                  typeof item === "object" &&
-                  item !== null &&
-                  typeof (item as ProductVariant).label === "string" &&
-                  typeof (item as ProductVariant).price === "number"
-          )
+            (item): item is ProductVariant =>
+                typeof item === "object" &&
+                item !== null &&
+                typeof (item as ProductVariant).label === "string" &&
+                typeof (item as ProductVariant).price === "number"
+        )
         : [];
 
 export const toProduct = (row: ProductRow): Product => ({
@@ -122,8 +122,8 @@ const parseList = (value: unknown, field: string, errors: string[]): string[] =>
     const raw = Array.isArray(value)
         ? value
         : typeof value === "string"
-          ? value.split(/\r?\n|,/)
-          : [];
+            ? value.split(/\r?\n|,/)
+            : [];
 
     const items = raw
         .map((item) => (typeof item === "string" ? item.trim() : ""))
@@ -176,8 +176,8 @@ const parseVariants = (value: unknown, errors: string[]): ProductVariant[] => {
     const raw = Array.isArray(value)
         ? value
         : typeof value === "string"
-          ? value.split(/\r?\n/)
-          : [];
+            ? value.split(/\r?\n/)
+            : [];
 
     const lines = raw
         .map((item) => (typeof item === "string" ? item.trim() : ""))
