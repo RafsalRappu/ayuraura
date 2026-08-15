@@ -1,15 +1,39 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
-import { requireAdmin } from "../_lib/auth";
-import { CATEGORY_COLUMNS, parseCategoryName, toCategory } from "../_lib/categories";
-import type { CategoryRow } from "../_lib/categories";
-import { ensureSchema, getSql, isUniqueViolation } from "../_lib/db";
-import { asRecord, logFailure, methodNotAllowed, sendError, sendJson } from "../_lib/http";
-import { slugify } from "../_lib/products";
+import { requireAdmin } from "./_lib/auth.js";
+import { CATEGORY_COLUMNS, parseCategoryName, syncCategoriesFromProducts, toCategory } from "./_lib/categories.js";
+import type { CategoryRow } from "./_lib/categories.js";
+import { ensureSchema, getSql, isUniqueViolation } from "./_lib/db.js";
+import { asRecord, logFailure, methodNotAllowed, readQueryParam, sendError, sendJson } from "./_lib/http.js";
+import { slugify } from "./_lib/products.js";
 
-const readSlug = (req: VercelRequest) => {
-    const value = req.query.slug;
-    return (Array.isArray(value) ? value[0] : value) ?? "";
+const listCategories = async (res: VercelResponse) => {
+    const sql = getSql();
+    const rows = (await sql`
+        SELECT c.id, c.slug, c.name, c.created_at, COUNT(p.id) AS product_count
+        FROM categories c
+        LEFT JOIN products p ON p.category = c.name
+        GROUP BY c.id
+        ORDER BY c.name
+    `) as (CategoryRow & { product_count: string })[];
+
+    sendJson(res, 200, { categories: rows.map((row) => toCategory(row, Number(row.product_count))) });
+};
+
+const handleList = async (req: VercelRequest, res: VercelResponse) => {
+    if (req.method !== "GET") return methodNotAllowed(res, ["GET"]);
+    if (!requireAdmin(req, res)) return;
+
+    res.setHeader("Cache-Control", "no-store");
+
+    try {
+        await ensureSchema();
+        await syncCategoriesFromProducts();
+        await listCategories(res);
+    } catch (error) {
+        logFailure("categories", error);
+        return sendError(res, 500, "Something went wrong reaching the category database.");
+    }
 };
 
 const renameCategory = async (slug: string, name: string, res: VercelResponse) => {
@@ -62,7 +86,11 @@ const deleteCategory = async (slug: string, res: VercelResponse) => {
     const count = Number(inUse[0].count);
 
     if (count > 0) {
-        return sendError(res, 409, `${count} product${count === 1 ? "" : "s"} still use this category — reassign them first.`);
+        return sendError(
+            res,
+            409,
+            `${count} product${count === 1 ? "" : "s"} still use this category — reassign them first.`
+        );
     }
 
     await sql`DELETE FROM categories WHERE slug = ${slug}`;
@@ -71,13 +99,10 @@ const deleteCategory = async (slug: string, res: VercelResponse) => {
     sendJson(res, 200, { deleted: slug });
 };
 
-const handler = async (req: VercelRequest, res: VercelResponse) => {
+const handleOne = async (slug: string, req: VercelRequest, res: VercelResponse) => {
     const method = req.method ?? "GET";
     if (method !== "PUT" && method !== "DELETE") return methodNotAllowed(res, ["PUT", "DELETE"]);
     if (!requireAdmin(req, res)) return;
-
-    const slug = readSlug(req);
-    if (!slug) return sendError(res, 400, "Category slug is missing.");
 
     let name: string | undefined;
     if (method === "PUT") {
@@ -95,6 +120,13 @@ const handler = async (req: VercelRequest, res: VercelResponse) => {
         logFailure("categories/[slug]", error);
         return sendError(res, 500, "Something went wrong reaching the category database.");
     }
+};
+
+/** One physical function serving /api/categories and /api/categories/:slug — see vercel.json's rewrites. */
+const handler = async (req: VercelRequest, res: VercelResponse) => {
+    const slug = readQueryParam(req, "slug");
+    if (!slug) return handleList(req, res);
+    return handleOne(slug, req, res);
 };
 
 export default handler;

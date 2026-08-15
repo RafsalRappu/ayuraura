@@ -8,6 +8,17 @@
       "source": "/sitemap.xml",
       "destination": "/api/sitemap"
     },
+    { "source": "/api/admin/:action", "destination": "/api/admin?action=:action" },
+    { "source": "/api/customers/:action", "destination": "/api/customers?action=:action" },
+    { "source": "/api/categories/:slug", "destination": "/api/categories?slug=:slug" },
+    { "source": "/api/coupons/validate", "destination": "/api/coupons?action=validate" },
+    { "source": "/api/coupons/:code", "destination": "/api/coupons?code=:code" },
+    { "source": "/api/products/:slug/reviews", "destination": "/api/products?slug=:slug&sub=reviews" },
+    { "source": "/api/products/:slug", "destination": "/api/products?slug=:slug" },
+    { "source": "/api/reviews/:id", "destination": "/api/reviews?id=:id" },
+    { "source": "/api/orders/:id/pay", "destination": "/api/orders?id=:id&action=pay" },
+    { "source": "/api/orders/:id/verify", "destination": "/api/orders?id=:id&action=verify" },
+    { "source": "/api/orders/:id", "destination": "/api/orders?id=:id" },
     {
       "source": "/((?!api/|@|src/|node_modules/|.*\\.).*)",
       "destination": "/index.html"
