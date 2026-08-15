@@ -1,9 +1,9 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { put } from "@vercel/blob";
 
-import { requireAdmin } from "./_lib/auth";
-import { logFailure, methodNotAllowed, readRawBody, sendError, sendJson } from "./_lib/http";
-import { slugify } from "./_lib/products";
+import { requireAdmin } from "./_lib/auth.js";
+import { logFailure, methodNotAllowed, readRawBody, sendError, sendJson } from "./_lib/http.js";
+import { slugify } from "./_lib/products.js";
 
 /** Serverless request bodies cap out around 4.5 MB; the admin downsizes first. */
 const MAX_BYTES = 4 * 1024 * 1024;
