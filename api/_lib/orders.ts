@@ -5,11 +5,11 @@ import type {
     Order,
     OrderItem,
     OrderStatus,
-} from "../../src/types/order";
-import { getSql } from "./db";
-import type { Result } from "./http";
-import { PRODUCT_COLUMNS, toProduct } from "./products";
-import type { ProductRow } from "./products";
+} from "../../src/types/order.js";
+import { getSql } from "./db.js";
+import type { Result } from "./http.js";
+import { PRODUCT_COLUMNS, toProduct } from "./products.js";
+import type { ProductRow } from "./products.js";
 
 export const STATUSES = ["pending", "paid", "failed", "cancelled"] as const;
 

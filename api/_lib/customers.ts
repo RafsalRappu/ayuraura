@@ -1,5 +1,5 @@
-import type { Customer } from "../../src/types/customer";
-import type { Result } from "./http";
+import type { Customer } from "../../src/types/customer.js";
+import type { Result } from "./http.js";
 
 export interface CustomerRow {
     id: number;

@@ -1,5 +1,5 @@
-import type { Product, ProductVariant } from "../../src/types/product";
-import type { Result } from "./http";
+import type { Product, ProductVariant } from "../../src/types/product.js";
+import type { Result } from "./http.js";
 
 export const PRODUCT_ICONS = ["lip", "face", "eye", "hair", "body"] as const;
 

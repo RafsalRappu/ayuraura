@@ -1,5 +1,5 @@
-import type { AdminReview, Review, ReviewStatus, ReviewSummary } from "../../src/types/review";
-import type { Result } from "./http";
+import type { AdminReview, Review, ReviewStatus, ReviewSummary } from "../../src/types/review.js";
+import type { Result } from "./http.js";
 
 export const STATUSES = ["pending", "approved", "rejected"] as const;
 

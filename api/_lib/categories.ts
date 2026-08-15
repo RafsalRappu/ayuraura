@@ -1,7 +1,7 @@
-import type { Category } from "../../src/types/category";
-import type { Result } from "./http";
-import { getSql } from "./db";
-import { slugify } from "./products";
+import type { Category } from "../../src/types/category.js";
+import type { Result } from "./http.js";
+import { getSql } from "./db.js";
+import { slugify } from "./products.js";
 
 const MAX_NAME = 60;
 

@@ -1,7 +1,7 @@
 import { createHmac } from "node:crypto";
 
-import { safeEqual } from "./crypto";
-import { logFailure } from "./http";
+import { safeEqual } from "./crypto.js";
+import { logFailure } from "./http.js";
 
 export const isPaymentsConfigured = () =>
     Boolean(process.env.RAZORPAY_KEY_ID) && Boolean(process.env.RAZORPAY_KEY_SECRET);

@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
-import { ensureSchema, getSql } from "../_lib/db";
-import { logFailure, methodNotAllowed, readRawBody, sendError, sendJson } from "../_lib/http";
-import { verifyWebhookSignature } from "../_lib/payments";
+import { ensureSchema, getSql } from "../_lib/db.js";
+import { logFailure, methodNotAllowed, readRawBody, sendError, sendJson } from "../_lib/http.js";
+import { verifyWebhookSignature } from "../_lib/payments.js";
 
 interface RazorpayWebhookPayload {
     event?: string;

@@ -1,7 +1,7 @@
 import { createHmac } from "node:crypto";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
-import { safeEqual } from "./crypto";
+import { safeEqual } from "./crypto.js";
 
 const COOKIE_NAME = "ayuaura_admin";
 const SESSION_TTL_SECONDS = 7 * 24 * 60 * 60;

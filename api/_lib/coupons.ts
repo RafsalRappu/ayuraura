@@ -1,6 +1,6 @@
-import type { Coupon, CouponType } from "../../src/types/coupon";
-import { getSql } from "./db";
-import type { Result } from "./http";
+import type { Coupon, CouponType } from "../../src/types/coupon.js";
+import { getSql } from "./db.js";
+import type { Result } from "./http.js";
 
 export const COUPON_COLUMNS = `
     id, code, type, value, starts_at, expires_at, usage_limit, times_used, active, created_at

@@ -38,6 +38,12 @@ export const readRawBody = (req: VercelRequest): Promise<Buffer> => {
     });
 };
 
+/** Reads a single-value query param populated by a vercel.json rewrite (e.g. `?slug=:slug`). */
+export const readQueryParam = (req: VercelRequest, key: string): string => {
+    const value = req.query[key];
+    return (Array.isArray(value) ? value[0] : value) ?? "";
+};
+
 export const asRecord = (body: unknown): Record<string, unknown> => {
     if (typeof body === "string") {
         try {

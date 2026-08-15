@@ -1,7 +1,7 @@
 import { createHmac } from "node:crypto";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
-import { safeEqual } from "./crypto";
+import { safeEqual } from "./crypto.js";
 
 /**
  * Deliberately separate from api/_lib/auth.ts (admin) — its own cookie, its
