@@ -6,6 +6,7 @@ import PageContainer from "../../common/PageContainer";
 import CustomButton from "../../common/CustomButton";
 import ProductMedia from "../../products/ProductMedia";
 import SectionTitle from "../../common/SectionTitle";
+import Reveal from "../../common/Reveal";
 import { useProducts } from "../../../data/useProducts";
 import { siteConfig } from "../../../config/site";
 
@@ -33,45 +34,47 @@ const SocialProof = () => {
                     ))}
 
                 {status !== "loading" &&
-                    galleryProducts.map((product) => (
+                    galleryProducts.map((product, index) => (
                         <Grid key={product.id} size={{ xs: 6, sm: 4, md: 2 }}>
-                            <Box
-                                component="a"
-                                href={siteConfig.social.instagram}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                aria-label={`View ${product.name} on Instagram`}
-                                sx={{
-                                    position: "relative",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    width: "100%",
-                                    aspectRatio: "1 / 1",
-                                    borderRadius: 4,
-                                    overflow: "hidden",
-                                    background: "#f8f8f6",
-                                    "&:hover .overlay": { opacity: 1 },
-                                }}
-                            >
-                                <ProductMedia product={product} iconSize="2.5rem" />
-
+                            <Reveal delay={index * 0.06} y={16}>
                                 <Box
-                                    className="overlay"
+                                    component="a"
+                                    href={siteConfig.social.instagram}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    aria-label={`View ${product.name} on Instagram`}
                                     sx={{
-                                        position: "absolute",
-                                        inset: 0,
-                                        bgcolor: "rgba(53, 94, 59, 0.55)",
+                                        position: "relative",
                                         display: "flex",
                                         alignItems: "center",
                                         justifyContent: "center",
-                                        opacity: 0,
-                                        transition: "opacity .3s",
+                                        width: "100%",
+                                        aspectRatio: "1 / 1",
+                                        borderRadius: 4,
+                                        overflow: "hidden",
+                                        background: "#f8f8f6",
+                                        "&:hover .overlay": { opacity: 1 },
                                     }}
                                 >
-                                    <InstagramIcon sx={{ color: "#fff", fontSize: 28 }} />
+                                    <ProductMedia product={product} iconSize="2.5rem" />
+
+                                    <Box
+                                        className="overlay"
+                                        sx={{
+                                            position: "absolute",
+                                            inset: 0,
+                                            bgcolor: "rgba(53, 94, 59, 0.55)",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            opacity: 0,
+                                            transition: "opacity .3s",
+                                        }}
+                                    >
+                                        <InstagramIcon sx={{ color: "#fff", fontSize: 28 }} />
+                                    </Box>
                                 </Box>
-                            </Box>
+                            </Reveal>
                         </Grid>
                     ))}
             </Grid>

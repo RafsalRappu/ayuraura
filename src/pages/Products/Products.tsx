@@ -22,6 +22,7 @@ import ProductCardSkeleton from "../../components/products/ProductCardSkeleton";
 import SectionTitle from "../../components/common/SectionTitle";
 import Breadcrumbs from "../../components/common/Breadcrumbs";
 import SEO from "../../components/common/SEO";
+import Reveal from "../../components/common/Reveal";
 
 import { useProducts } from "../../data/useProducts";
 import type { Product } from "../../types/product";
@@ -158,9 +159,11 @@ const Products = () => {
                                       <ProductCardSkeleton />
                                   </Grid>
                               ))
-                            : filteredProducts.map((product: Product) => (
+                            : filteredProducts.map((product: Product, index) => (
                                   <Grid key={product.id} size={{ xs: 12, sm: 6, md: 4 }}>
-                                      <ProductCard product={product} />
+                                      <Reveal delay={Math.min(index, 6) * 0.06}>
+                                          <ProductCard product={product} />
+                                      </Reveal>
                                   </Grid>
                               ))}
                     </Grid>

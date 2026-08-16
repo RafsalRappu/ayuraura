@@ -20,6 +20,7 @@ import {
 } from "@mui/material";
 
 import { useTheme } from "@mui/material/styles";
+import { AnimatePresence, motion } from "framer-motion";
 
 import MenuIcon from "@mui/icons-material/Menu";
 import SpaIcon from "@mui/icons-material/Spa";
@@ -58,7 +59,24 @@ const Navbar = () => {
 
     const cartButton = (
         <IconButton onClick={() => setCartOpen(true)} aria-label="Open cart">
-            <Badge badgeContent={itemCount} color="secondary">
+            <Badge
+                invisible={itemCount === 0}
+                color="secondary"
+                badgeContent={
+                    <AnimatePresence mode="popLayout" initial={false}>
+                        <motion.span
+                            key={itemCount}
+                            initial={{ scale: 0.4, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.4, opacity: 0 }}
+                            transition={{ duration: 0.2, ease: "easeOut" }}
+                            style={{ display: "inline-block" }}
+                        >
+                            {itemCount}
+                        </motion.span>
+                    </AnimatePresence>
+                }
+            >
                 <ShoppingCartOutlinedIcon />
             </Badge>
         </IconButton>

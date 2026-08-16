@@ -10,6 +10,7 @@ import ProductCardSkeleton from "../../products/ProductCardSkeleton";
 import SectionTitle from "../../common/SectionTitle";
 
 import PageContainer from "../../common/PageContainer";
+import Reveal from "../../common/Reveal";
 
 const FeaturedProducts = () => {
     const { products, status } = useProducts();
@@ -30,9 +31,11 @@ const FeaturedProducts = () => {
                               <ProductCardSkeleton />
                           </Grid>
                       ))
-                    : featured.map((product) => (
+                    : featured.map((product, index) => (
                           <Grid key={product.id} size={{ xs: 12, md: 4 }}>
-                              <ProductCard product={product} />
+                              <Reveal delay={Math.min(index, 6) * 0.08}>
+                                  <ProductCard product={product} />
+                              </Reveal>
                           </Grid>
                       ))}
             </Grid>

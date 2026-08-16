@@ -9,6 +9,7 @@ import {
     Typography,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
 import CloseIcon from "@mui/icons-material/Close";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlined";
 import ShoppingCartCheckoutIcon from "@mui/icons-material/ShoppingCartCheckout";
@@ -64,41 +65,53 @@ const CartDrawer = ({ open, onClose }: CartDrawerProps) => {
                     </Box>
                 ) : (
                     <Stack spacing={2} sx={{ flex: 1, overflowY: "auto", p: 2 }}>
-                        {items.map((item) => (
-                            <Stack key={item.key} direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
-                                <Avatar src={item.image} variant="rounded" sx={{ width: 56, height: 56, bgcolor: "success.light" }}>
-                                    {item.name.charAt(0)}
-                                </Avatar>
+                        <AnimatePresence initial={false}>
+                            {items.map((item) => (
+                                <motion.div
+                                    key={item.key}
+                                    layout
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: "auto" }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    transition={{ duration: 0.25, ease: "easeOut" }}
+                                    style={{ overflow: "hidden" }}
+                                >
+                                    <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
+                                        <Avatar src={item.image} variant="rounded" sx={{ width: 56, height: 56, bgcolor: "success.light" }}>
+                                            {item.name.charAt(0)}
+                                        </Avatar>
 
-                                <Box sx={{ flex: 1, minWidth: 0 }}>
-                                    <Typography noWrap sx={{ fontWeight: 600 }}>
-                                        {item.name}
-                                    </Typography>
-                                    {item.variantLabel && (
-                                        <Typography variant="body2" color="text.secondary">
-                                            {item.variantLabel}
-                                        </Typography>
-                                    )}
-                                    <Typography variant="body2" color="primary" sx={{ fontWeight: 600 }}>
-                                        ₹{item.price * item.quantity}
-                                    </Typography>
-                                </Box>
+                                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                                            <Typography noWrap sx={{ fontWeight: 600 }}>
+                                                {item.name}
+                                            </Typography>
+                                            {item.variantLabel && (
+                                                <Typography variant="body2" color="text.secondary">
+                                                    {item.variantLabel}
+                                                </Typography>
+                                            )}
+                                            <Typography variant="body2" color="primary" sx={{ fontWeight: 600 }}>
+                                                ₹{item.price * item.quantity}
+                                            </Typography>
+                                        </Box>
 
-                                <Stack spacing={0.5} sx={{ alignItems: "center" }}>
-                                    <QuantityStepper
-                                        value={item.quantity}
-                                        onChange={(value) => setQuantity(item.key, value)}
-                                    />
-                                    <IconButton
-                                        size="small"
-                                        aria-label={`Remove ${item.name} from cart`}
-                                        onClick={() => removeItem(item.key)}
-                                    >
-                                        <DeleteOutlineIcon fontSize="small" />
-                                    </IconButton>
-                                </Stack>
-                            </Stack>
-                        ))}
+                                        <Stack spacing={0.5} sx={{ alignItems: "center" }}>
+                                            <QuantityStepper
+                                                value={item.quantity}
+                                                onChange={(value) => setQuantity(item.key, value)}
+                                            />
+                                            <IconButton
+                                                size="small"
+                                                aria-label={`Remove ${item.name} from cart`}
+                                                onClick={() => removeItem(item.key)}
+                                            >
+                                                <DeleteOutlineIcon fontSize="small" />
+                                            </IconButton>
+                                        </Stack>
+                                    </Stack>
+                                </motion.div>
+                            ))}
+                        </AnimatePresence>
                     </Stack>
                 )}
 

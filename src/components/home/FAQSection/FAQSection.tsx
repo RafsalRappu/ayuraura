@@ -4,6 +4,7 @@ import { Helmet } from "react-helmet-async";
 import PageContainer from "../../common/PageContainer";
 import SectionTitle from "../../common/SectionTitle";
 import FAQAccordion from "../../common/FAQAccordion";
+import Reveal from "../../common/Reveal";
 import { faqs } from "../../../data/faqs";
 import { faqSchema } from "../../../utils/structuredData";
 
@@ -20,9 +21,11 @@ const FAQSection = () => {
                     subtitle="Everything you need to know before you order."
                 />
 
-                <Box sx={{ maxWidth: 760, mx: "auto" }}>
-                    <FAQAccordion faqs={faqs} />
-                </Box>
+                <Reveal>
+                    <Box sx={{ maxWidth: 760, mx: "auto" }}>
+                        <FAQAccordion faqs={faqs} />
+                    </Box>
+                </Reveal>
             </PageContainer>
         </Box>
     );
