@@ -1,5 +1,6 @@
 import { Card, CardContent, Typography, Chip, Stack, IconButton, Tooltip } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
 
 import CustomButton from "../../common/CustomButton";
@@ -70,7 +71,10 @@ const ProductCard = ({ product }: Props) => {
                     </CustomButton>
 
                     <Tooltip title={product.inStock ? "Add to cart" : "Out of stock"}>
-                        <span>
+                        <motion.span
+                            whileTap={product.inStock ? { scale: 0.8 } : undefined}
+                            style={{ display: "inline-block" }}
+                        >
                             <IconButton
                                 color="primary"
                                 disabled={!product.inStock}
@@ -87,7 +91,7 @@ const ProductCard = ({ product }: Props) => {
                             >
                                 <AddShoppingCartIcon fontSize="small" />
                             </IconButton>
-                        </span>
+                        </motion.span>
                     </Tooltip>
                 </Stack>
             </CardContent>
