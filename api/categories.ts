@@ -22,7 +22,7 @@ const listCategories = async (res: VercelResponse) => {
 
 const handleList = async (req: VercelRequest, res: VercelResponse) => {
     if (req.method !== "GET") return methodNotAllowed(res, ["GET"]);
-    if (!requireAdmin(req, res)) return;
+    if (!(await requireAdmin(req, res))) return;
 
     res.setHeader("Cache-Control", "no-store");
 
@@ -102,7 +102,7 @@ const deleteCategory = async (slug: string, res: VercelResponse) => {
 const handleOne = async (slug: string, req: VercelRequest, res: VercelResponse) => {
     const method = req.method ?? "GET";
     if (method !== "PUT" && method !== "DELETE") return methodNotAllowed(res, ["PUT", "DELETE"]);
-    if (!requireAdmin(req, res)) return;
+    if (!(await requireAdmin(req, res))) return;
 
     let name: string | undefined;
     if (method === "PUT") {

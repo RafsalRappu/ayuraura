@@ -26,12 +26,15 @@ import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 import CategoryOutlinedIcon from "@mui/icons-material/CategoryOutlined";
 import LocalOfferOutlinedIcon from "@mui/icons-material/LocalOfferOutlined";
 import RateReviewOutlinedIcon from "@mui/icons-material/RateReviewOutlined";
+import PeopleOutlineIcon from "@mui/icons-material/PeopleOutlined";
+import AdminPanelSettingsOutlinedIcon from "@mui/icons-material/AdminPanelSettingsOutlined";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
 import SEO from "../../components/common/SEO";
 import { BrandMark } from "../../components/common/BrandLogo";
 import { errorMessage } from "../../api/client";
 import { fetchSession, logout } from "../../api/admin";
+import type { AdminAccount } from "../../api/admin";
 import { createAppTheme } from "../../theme/createAppTheme";
 import { useThemePreset } from "../../theme/useThemePreset";
 import { EASE_OUT, SPRING_SNAPPY } from "../../theme/motion";
@@ -42,6 +45,8 @@ import AdminOrders from "./AdminOrders";
 import AdminCategories from "./AdminCategories";
 import AdminCoupons from "./AdminCoupons";
 import AdminReviews from "./AdminReviews";
+import AdminCustomers from "./AdminCustomers";
+import AdminAdmins from "./AdminAdmins";
 import AdminLogin from "./AdminLogin";
 import type { AdminTab } from "./adminTypes";
 
@@ -49,7 +54,7 @@ const DRAWER_WIDTH = 272;
 
 type SessionState =
     | { status: "loading" }
-    | { status: "ready"; authenticated: boolean; configured: boolean }
+    | { status: "ready"; authenticated: boolean; configured: boolean; needsSetup: boolean; admin?: AdminAccount }
     | { status: "unreachable"; message: string };
 
 interface NavItem {
@@ -100,8 +105,8 @@ const AdminShell = () => {
     const refreshSession = useCallback(async () => {
         setSession({ status: "loading" });
         try {
-            const { authenticated, configured } = await fetchSession();
-            setSession({ status: "ready", authenticated, configured });
+            const { authenticated, configured, needsSetup, admin } = await fetchSession();
+            setSession({ status: "ready", authenticated, configured, needsSetup, admin });
         } catch (error) {
             // Say so plainly rather than showing a sign-in form that cannot work.
             setSession({
@@ -133,10 +138,15 @@ const AdminShell = () => {
         { tab: "overview", label: "Overview", icon: <DashboardOutlinedIcon fontSize="small" /> },
         { tab: "products", label: "Products", icon: <Inventory2OutlinedIcon fontSize="small" /> },
         { tab: "orders", label: "Orders", icon: <ReceiptLongOutlinedIcon fontSize="small" />, badge: pendingOrders },
+        { tab: "customers", label: "Users", icon: <PeopleOutlineIcon fontSize="small" /> },
         { tab: "categories", label: "Categories", icon: <CategoryOutlinedIcon fontSize="small" /> },
         { tab: "coupons", label: "Coupons", icon: <LocalOfferOutlinedIcon fontSize="small" /> },
         { tab: "reviews", label: "Reviews", icon: <RateReviewOutlinedIcon fontSize="small" />, badge: pendingReviews },
+        { tab: "admins", label: "Admins", icon: <AdminPanelSettingsOutlinedIcon fontSize="small" /> },
     ];
+
+    const isAuthed = session.status === "ready" && session.authenticated;
+    const currentAdmin = session.status === "ready" ? session.admin : undefined;
 
     const currentLabel = navItems.find((item) => item.tab === tab)?.label ?? "Admin";
 
@@ -226,6 +236,16 @@ const AdminShell = () => {
 
             <Box sx={{ p: 2 }}>
                 <Box sx={{ p: 1, borderRadius: 3, bgcolor: "background.neutral" }}>
+                    {currentAdmin && (
+                        <Box sx={{ px: 1, pt: 0.5, pb: 1 }}>
+                            <Typography variant="caption" color="text.secondary" sx={{ display: "block" }}>
+                                Signed in as
+                            </Typography>
+                            <Typography variant="body2" sx={{ fontWeight: 700 }} noWrap>
+                                {currentAdmin.name}
+                            </Typography>
+                        </Box>
+                    )}
                     <Button
                         fullWidth
                         component={RouterLink}
@@ -251,7 +271,6 @@ const AdminShell = () => {
         </Box>
     );
 
-    const isAuthed = session.status === "ready" && session.authenticated;
 
     const glassBar = {
         bgcolor: alpha(theme.palette.background.paper, 0.8),
@@ -311,7 +330,11 @@ const AdminShell = () => {
             )}
 
             {session.status === "ready" && !session.authenticated && (
-                <AdminLogin configured={session.configured} onSignedIn={() => void refreshSession()} />
+                <AdminLogin
+                    configured={session.configured}
+                    needsSetup={session.needsSetup}
+                    onSignedIn={() => void refreshSession()}
+                />
             )}
 
             {isAuthed && (
@@ -394,6 +417,15 @@ const AdminShell = () => {
                                     {tab === "categories" && <AdminCategories />}
                                     {tab === "coupons" && <AdminCoupons />}
                                     {tab === "reviews" && <AdminReviews />}
+                                    {tab === "customers" && <AdminCustomers />}
+                                    {tab === "admins" && currentAdmin && (
+                                        <AdminAdmins
+                                            currentAdmin={currentAdmin}
+                                            onSelfUpdated={(admin) =>
+                                                setSession((s) => (s.status === "ready" ? { ...s, admin } : s))
+                                            }
+                                        />
+                                    )}
                                 </motion.div>
                             </AnimatePresence>
                         </Box>

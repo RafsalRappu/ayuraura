@@ -62,7 +62,7 @@ const handleList = async (req: VercelRequest, res: VercelResponse) => {
 
     // Anyone can submit a review; only the shop owner sees the moderation
     // queue — same inverse-of-products shape as orders.
-    if (method === "GET" && !requireAdmin(req, res)) return;
+    if (method === "GET" && !(await requireAdmin(req, res))) return;
 
     try {
         await ensureSchema();
@@ -103,7 +103,7 @@ const deleteReview = async (id: number, res: VercelResponse) => {
 const handleOne = async (rawId: string, req: VercelRequest, res: VercelResponse) => {
     const method = req.method ?? "GET";
     if (method !== "PATCH" && method !== "DELETE") return methodNotAllowed(res, ["PATCH", "DELETE"]);
-    if (!requireAdmin(req, res)) return;
+    if (!(await requireAdmin(req, res))) return;
 
     const id = Number(rawId);
     if (!Number.isInteger(id) || id <= 0) return sendError(res, 400, "Review id is missing.");

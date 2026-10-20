@@ -97,7 +97,7 @@ const handleList = async (req: VercelRequest, res: VercelResponse) => {
 
     // Anyone can place an order; only the shop owner sees the list — the
     // inverse of api/products.ts, where GET is public and POST is admin.
-    if (method === "GET" && !requireAdmin(req, res)) return;
+    if (method === "GET" && !(await requireAdmin(req, res))) return;
 
     try {
         await ensureSchema();
@@ -148,7 +148,7 @@ const handleOne = async (publicId: string, req: VercelRequest, res: VercelRespon
 
     let input: PatchInput | undefined;
     if (method === "PATCH") {
-        if (!requireAdmin(req, res)) return;
+        if (!(await requireAdmin(req, res))) return;
 
         const body = asRecord(req.body);
         const status = typeof body.status === "string" ? body.status : "";

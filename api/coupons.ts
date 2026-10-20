@@ -45,7 +45,7 @@ const createCoupon = async (input: CouponInput, res: VercelResponse) => {
 const handleList = async (req: VercelRequest, res: VercelResponse) => {
     const method = req.method ?? "GET";
     if (method !== "GET" && method !== "POST") return methodNotAllowed(res, ["GET", "POST"]);
-    if (!requireAdmin(req, res)) return;
+    if (!(await requireAdmin(req, res))) return;
 
     let input: CouponInput | undefined;
     if (method === "POST") {
@@ -105,7 +105,7 @@ const deleteCoupon = async (code: string, res: VercelResponse) => {
 const handleOne = async (rawCode: string, req: VercelRequest, res: VercelResponse) => {
     const method = req.method ?? "GET";
     if (method !== "PUT" && method !== "DELETE") return methodNotAllowed(res, ["PUT", "DELETE"]);
-    if (!requireAdmin(req, res)) return;
+    if (!(await requireAdmin(req, res))) return;
 
     const code = rawCode.toUpperCase();
 

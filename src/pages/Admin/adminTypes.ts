@@ -1,6 +1,6 @@
 import type { OrderStatus } from "../../types/order";
 
-export type AdminTab = "overview" | "products" | "orders" | "categories" | "coupons" | "reviews";
+export type AdminTab = "overview" | "products" | "orders" | "categories" | "coupons" | "reviews" | "customers" | "admins";
 
 export const ORDER_STATUS_LABEL: Record<OrderStatus, string> = {
     pending: "Pending",

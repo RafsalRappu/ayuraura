@@ -144,6 +144,20 @@ const createSchema = async () => {
                 created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
             )
         `,
+
+        // token_version is baked into each admin's session cookie and bumped on
+        // a password change, so old sessions stop working the moment it changes.
+        sql`
+            CREATE TABLE IF NOT EXISTS admins (
+                id            SERIAL PRIMARY KEY,
+                username      TEXT UNIQUE NOT NULL,
+                name          TEXT NOT NULL,
+                password_hash TEXT NOT NULL,
+                token_version INTEGER NOT NULL DEFAULT 1,
+                created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                updated_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            )
+        `,
     ]);
 };
 

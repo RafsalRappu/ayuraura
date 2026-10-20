@@ -20,10 +20,12 @@ import { login } from "../../api/admin";
 
 interface AdminLoginProps {
     configured: boolean;
+    needsSetup: boolean;
     onSignedIn: () => void;
 }
 
-const AdminLogin = ({ configured, onSignedIn }: AdminLoginProps) => {
+const AdminLogin = ({ configured, needsSetup, onSignedIn }: AdminLoginProps) => {
+    const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [capsLock, setCapsLock] = useState(false);
@@ -36,7 +38,7 @@ const AdminLogin = ({ configured, onSignedIn }: AdminLoginProps) => {
         setError(null);
 
         try {
-            await login(password);
+            await login(username, password);
             setPassword("");
             onSignedIn();
         } catch (cause) {
@@ -108,6 +110,14 @@ const AdminLogin = ({ configured, onSignedIn }: AdminLoginProps) => {
                     </Alert>
                 )}
 
+                {configured && needsSetup && (
+                    <Alert severity="info" sx={{ mb: 3, borderRadius: 2 }}>
+                        First sign-in: use the username <strong>admin</strong> with the{" "}
+                        <strong>ADMIN_PASSWORD</strong> set on the server. That creates the first admin
+                        account — add the rest from the Admins page.
+                    </Alert>
+                )}
+
                 {error && (
                     <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }} onClose={() => setError(null)}>
                         {error}
@@ -116,6 +126,17 @@ const AdminLogin = ({ configured, onSignedIn }: AdminLoginProps) => {
 
                 <Box component="form" onSubmit={handleSubmit}>
                     <TextField
+                        label="Username"
+                        value={username}
+                        onChange={(event) => setUsername(event.target.value)}
+                        fullWidth
+                        autoFocus
+                        autoComplete="username"
+                        slotProps={{ input: { sx: { borderRadius: 3 } }, htmlInput: { autoCapitalize: "none", spellCheck: false } }}
+                        sx={{ mb: 2.5 }}
+                    />
+
+                    <TextField
                         label="Password"
                         type={showPassword ? "text" : "password"}
                         value={password}
@@ -123,7 +144,6 @@ const AdminLogin = ({ configured, onSignedIn }: AdminLoginProps) => {
                         onKeyDown={trackCapsLock}
                         onKeyUp={trackCapsLock}
                         fullWidth
-                        autoFocus
                         autoComplete="current-password"
                         helperText={capsLock ? "Caps Lock is on" : " "}
                         slotProps={{
@@ -152,7 +172,7 @@ const AdminLogin = ({ configured, onSignedIn }: AdminLoginProps) => {
                         variant="contained"
                         fullWidth
                         size="large"
-                        disabled={submitting || !password || !configured}
+                        disabled={submitting || !username.trim() || !password || !configured}
                         startIcon={submitting ? <CircularProgress size={16} color="inherit" /> : undefined}
                         sx={{ py: 1.5, borderRadius: 3, fontWeight: 600, boxShadow: "none" }}
                     >

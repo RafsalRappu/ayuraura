@@ -62,7 +62,7 @@ const handleList = async (req: VercelRequest, res: VercelResponse) => {
     // 401/422 rather than a storage error that tells them nothing.
     let input: ProductInput | undefined;
     if (method === "POST") {
-        if (!requireAdmin(req, res)) return;
+        if (!(await requireAdmin(req, res))) return;
 
         const parsed = parseProductInput(asRecord(req.body));
         if (!parsed.ok) return sendError(res, 422, "Please fix the highlighted fields.", parsed.errors);
@@ -163,7 +163,7 @@ const handleOne = async (slug: string, req: VercelRequest, res: VercelResponse) 
     // 401/422 rather than a storage error that tells them nothing.
     let input: ProductInput | undefined;
     if (WRITE_METHODS.includes(method)) {
-        if (!requireAdmin(req, res)) return;
+        if (!(await requireAdmin(req, res))) return;
 
         if (method !== "DELETE") {
             const parsed = parseProductInput(asRecord(req.body));

@@ -29,7 +29,7 @@ const handler = async (req: VercelRequest, res: VercelResponse) => {
     if (req.method !== "POST") return methodNotAllowed(res, ["POST"]);
 
     res.setHeader("Cache-Control", "no-store");
-    if (!requireAdmin(req, res)) return;
+    if (!(await requireAdmin(req, res))) return;
 
     if (!process.env.BLOB_READ_WRITE_TOKEN) {
         return sendError(
