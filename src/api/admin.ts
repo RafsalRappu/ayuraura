@@ -1,3 +1,4 @@
+import type { AdminOrder } from "../types/order";
 import { request } from "./client";
 
 export interface AdminSession {
@@ -15,6 +16,26 @@ export const login = (password: string) =>
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ password }),
     });
+
+export interface StorageStatus {
+    usedBytes: number;
+    limitBytes: number;
+    percent: number;
+    thresholdPercent: number;
+    /** True once usage reaches the threshold — the only time a backup may be taken. */
+    backupEnabled: boolean;
+}
+
+export const fetchStorage = () => request<StorageStatus>("/api/admin/storage", { cache: "no-store" });
+
+export interface BackupPage {
+    orders: AdminOrder[];
+    /** Pass as `after` to get the next page; null on the last one. */
+    nextAfter: number | null;
+}
+
+export const fetchBackupPage = (after: number) =>
+    request<BackupPage>(`/api/admin/backup?after=${after}`, { cache: "no-store" });
 
 export const logout = () => request<{ authenticated: boolean }>("/api/admin/logout", { method: "POST" });
 

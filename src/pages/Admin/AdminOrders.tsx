@@ -30,24 +30,15 @@ import { errorMessage } from "../../api/client";
 import { fetchOrders, updateOrderStatus } from "../../api/orders";
 import { orderShortCode } from "../../data/cart";
 import type { AdminOrder, OrderStatus } from "../../types/order";
+import { ORDER_STATUS_COLOR, ORDER_STATUS_LABEL } from "./adminTypes";
+import StorageBackupCard from "./StorageBackupCard";
 import TableSkeletonRows from "./TableSkeletonRows";
 
 const STATUS_OPTIONS: OrderStatus[] = ["pending", "paid", "failed", "cancelled"];
 const STATUS_FILTER_OPTIONS: Array<OrderStatus | "all"> = ["all", ...STATUS_OPTIONS];
 
-const STATUS_LABEL: Record<OrderStatus, string> = {
-    pending: "Pending",
-    paid: "Paid",
-    failed: "Failed",
-    cancelled: "Cancelled",
-};
-
-const STATUS_COLOR: Record<OrderStatus, "warning" | "success" | "error" | "default"> = {
-    pending: "warning",
-    paid: "success",
-    failed: "error",
-    cancelled: "default",
-};
+const STATUS_LABEL = ORDER_STATUS_LABEL;
+const STATUS_COLOR = ORDER_STATUS_COLOR;
 
 interface AdminOrdersProps {
     initialStatusFilter?: string;
@@ -148,6 +139,8 @@ const AdminOrders = ({ initialStatusFilter }: AdminOrdersProps) => {
                     Refresh
                 </Button>
             </Stack>
+
+            <StorageBackupCard />
 
             <Stack direction="row" spacing={1.5} sx={{ mb: 3, flexWrap: "wrap" }}>
                 <TextField
