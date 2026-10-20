@@ -1,21 +1,22 @@
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { CssBaseline, ThemeProvider } from "@mui/material";
-import { createTheme } from "@mui/material/styles";
 
 import { themePresets, defaultThemePreset } from "./presets";
 import type { ThemePresetKey } from "./presets";
-import { sharedPalette } from "./palette";
-import { typography } from "./typography";
-import { components } from "./components";
+import { createAppTheme } from "./createAppTheme";
 import { hexToRgbString } from "./colorUtils";
 import { ThemePresetContext } from "./useThemePreset";
 
 const STORAGE_KEY = "ayuaura-theme-preset";
 
 const readStoredPreset = (): ThemePresetKey => {
-    const stored = window.localStorage.getItem(STORAGE_KEY);
-    return stored && stored in themePresets ? (stored as ThemePresetKey) : defaultThemePreset;
+    try {
+        const stored = window.localStorage.getItem(STORAGE_KEY);
+        return stored && stored in themePresets ? (stored as ThemePresetKey) : defaultThemePreset;
+    } catch {
+        return defaultThemePreset;
+    }
 };
 
 interface ThemePresetProviderProps {
@@ -27,28 +28,22 @@ export const ThemePresetProvider = ({ children }: ThemePresetProviderProps) => {
 
     const setPreset = (next: ThemePresetKey) => {
         setPresetState(next);
-        window.localStorage.setItem(STORAGE_KEY, next);
+        try {
+            window.localStorage.setItem(STORAGE_KEY, next);
+        } catch {
+            // Storage blocked (private mode) — the choice still applies for this visit.
+        }
     };
 
     useEffect(() => {
-        const { primary } = themePresets[preset].palette;
+        const { primary, secondary } = themePresets[preset].palette;
         const root = document.documentElement.style;
         root.setProperty("--brand-primary", primary.main);
         root.setProperty("--brand-primary-rgb", hexToRgbString(primary.main));
+        root.setProperty("--brand-secondary", secondary.main);
     }, [preset]);
 
-    const theme = useMemo(
-        () =>
-            createTheme({
-                palette: {
-                    ...sharedPalette,
-                    ...themePresets[preset].palette,
-                },
-                typography,
-                components,
-            }),
-        [preset]
-    );
+    const theme = useMemo(() => createAppTheme(preset), [preset]);
 
     return (
         <ThemePresetContext.Provider value={{ preset, setPreset }}>

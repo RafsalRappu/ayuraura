@@ -1,14 +1,32 @@
 import { useState } from "react";
 import type { MouseEvent } from "react";
 import { Box, IconButton, ListItemIcon, Menu, MenuItem, Tooltip, Typography } from "@mui/material";
-import PaletteOutlinedIcon from "@mui/icons-material/PaletteOutlined";
-import CheckIcon from "@mui/icons-material/Check";
+import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
 
 import { themePresets } from "../../../theme/presets";
 import type { ThemePresetKey } from "../../../theme/presets";
 import { useThemePreset } from "../../../theme/useThemePreset";
 
 const presetKeys = Object.keys(themePresets) as ThemePresetKey[];
+
+/** Primary-to-secondary swatch for a preset. */
+const Swatch = ({ presetKey, size }: { presetKey: ThemePresetKey; size: number }) => {
+    const { primary, secondary } = themePresets[presetKey].palette;
+
+    return (
+        <Box
+            aria-hidden
+            sx={{
+                width: size,
+                height: size,
+                flexShrink: 0,
+                borderRadius: "50%",
+                background: `linear-gradient(135deg, ${primary.main} 0% 55%, ${secondary.main} 55% 100%)`,
+                boxShadow: (theme) => `inset 0 0 0 2px ${theme.palette.background.paper}, 0 0 0 1px ${theme.palette.divider}`,
+            }}
+        />
+    );
+};
 
 const ThemeSwitcher = () => {
     const { preset, setPreset } = useThemePreset();
@@ -25,17 +43,19 @@ const ThemeSwitcher = () => {
     return (
         <>
             <Tooltip title="Change theme color">
-                <IconButton
-                    onClick={handleOpen}
-                    aria-label="Change theme color"
-                    sx={{ border: "1px solid rgba(0,0,0,0.12)" }}
-                >
-                    <PaletteOutlinedIcon fontSize="small" />
+                <IconButton onClick={handleOpen} aria-label="Change theme color" sx={{ width: 42, height: 42 }}>
+                    <Swatch presetKey={preset} size={20} />
                 </IconButton>
             </Tooltip>
 
-            <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
-                <Typography variant="overline" sx={{ px: 2, color: "text.secondary" }}>
+            <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleClose}
+                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                transformOrigin={{ vertical: "top", horizontal: "right" }}
+            >
+                <Typography variant="overline" component="div" sx={{ px: 1.25, pt: 0.5, pb: 1, color: "text.secondary" }}>
                     Theme Color
                 </Typography>
 
@@ -44,24 +64,16 @@ const ThemeSwitcher = () => {
                     const active = key === preset;
 
                     return (
-                        <MenuItem key={key} onClick={() => handleSelect(key)} sx={{ minWidth: 200 }}>
-                            <Box
-                                sx={{
-                                    width: 20,
-                                    height: 20,
-                                    borderRadius: "50%",
-                                    bgcolor: item.palette.primary.main,
-                                    border: "1px solid rgba(0,0,0,0.1)",
-                                    mr: 1.5,
-                                    flexShrink: 0,
-                                }}
-                            />
+                        <MenuItem key={key} selected={active} onClick={() => handleSelect(key)} sx={{ minWidth: 210, gap: 1.5 }}>
+                            <Swatch presetKey={key} size={22} />
 
-                            <Typography sx={{ flexGrow: 1 }}>{item.label}</Typography>
+                            <Typography variant="body2" sx={{ flexGrow: 1, fontWeight: active ? 700 : 500 }}>
+                                {item.label}
+                            </Typography>
 
                             {active && (
                                 <ListItemIcon sx={{ minWidth: "auto" }}>
-                                    <CheckIcon fontSize="small" color="primary" />
+                                    <CheckRoundedIcon fontSize="small" color="primary" />
                                 </ListItemIcon>
                             )}
                         </MenuItem>

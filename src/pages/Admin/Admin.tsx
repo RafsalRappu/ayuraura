@@ -1,14 +1,11 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { Link as RouterLink } from "react-router-dom";
 import {
     Alert,
     AppBar,
-    Badge,
     Box,
     Button,
-    CircularProgress,
-    Divider,
     Drawer,
     IconButton,
     List,
@@ -18,10 +15,11 @@ import {
     Toolbar,
     Typography,
 } from "@mui/material";
-import SpaIcon from "@mui/icons-material/Spa";
+import { alpha, ThemeProvider, useTheme } from "@mui/material/styles";
+import { AnimatePresence, motion } from "framer-motion";
 import LogoutIcon from "@mui/icons-material/Logout";
 import RefreshIcon from "@mui/icons-material/Refresh";
-import MenuIcon from "@mui/icons-material/Menu";
+import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
 import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
@@ -31,8 +29,13 @@ import RateReviewOutlinedIcon from "@mui/icons-material/RateReviewOutlined";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
 import SEO from "../../components/common/SEO";
+import { BrandMark } from "../../components/common/BrandLogo";
 import { errorMessage } from "../../api/client";
 import { fetchSession, logout } from "../../api/admin";
+import { createAppTheme } from "../../theme/createAppTheme";
+import { useThemePreset } from "../../theme/useThemePreset";
+import { EASE_OUT, SPRING_SNAPPY } from "../../theme/motion";
+import { serifFont } from "../../theme/typography";
 import AdminOverview from "./AdminOverview";
 import AdminDashboard from "./AdminDashboard";
 import AdminOrders from "./AdminOrders";
@@ -42,7 +45,7 @@ import AdminReviews from "./AdminReviews";
 import AdminLogin from "./AdminLogin";
 import type { AdminTab } from "./adminTypes";
 
-const DRAWER_WIDTH = 252;
+const DRAWER_WIDTH = 272;
 
 type SessionState =
     | { status: "loading" }
@@ -56,7 +59,37 @@ interface NavItem {
     badge?: number;
 }
 
+const AdminWordmark = () => (
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+        <BrandMark size={40} />
+        <Box>
+            <Typography sx={{ fontFamily: serifFont, fontWeight: 700, fontSize: "1.5rem", lineHeight: 1 }}>
+                AyuAura
+            </Typography>
+            <Typography
+                variant="caption"
+                sx={{ color: "text.secondary", fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase" }}
+            >
+                Admin
+            </Typography>
+        </Box>
+    </Box>
+);
+
 const Admin = () => {
+    const { preset } = useThemePreset();
+    // The admin keeps the shop's colors but swaps in dashboard typography and radii.
+    const adminTheme = useMemo(() => createAppTheme(preset, "admin"), [preset]);
+
+    return (
+        <ThemeProvider theme={adminTheme}>
+            <AdminShell />
+        </ThemeProvider>
+    );
+};
+
+const AdminShell = () => {
+    const theme = useTheme();
     const [session, setSession] = useState<SessionState>({ status: "loading" });
     const [tab, setTab] = useState<AdminTab>("overview");
     const [mobileOpen, setMobileOpen] = useState(false);
@@ -107,82 +140,125 @@ const Admin = () => {
 
     const currentLabel = navItems.find((item) => item.tab === tab)?.label ?? "Admin";
 
-    const sidebarContent = (
+    // Rendered twice (mobile drawer + desktop rail), so each copy gets its own
+    // layoutId — a shared one would make the highlight jump between drawers.
+    const renderSidebar = (instance: "mobile" | "desktop") => (
         <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
-            <Toolbar sx={{ gap: 1, px: 2.5 }}>
-                <SpaIcon color="primary" />
-                <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-                    AyuAura Admin
-                </Typography>
-            </Toolbar>
+            <Box sx={{ px: 3, pt: 3, pb: 2.5 }}>
+                <AdminWordmark />
+            </Box>
 
-            <Divider />
+            <Typography
+                variant="overline"
+                sx={{ px: 3.5, pt: 1, color: "text.disabled", fontSize: "0.6875rem" }}
+            >
+                Management
+            </Typography>
 
-            <List sx={{ flex: 1, px: 1.5, py: 2 }}>
-                {navItems.map((item) => (
-                    <ListItemButton
-                        key={item.tab}
-                        selected={tab === item.tab}
-                        onClick={() => goTo(item.tab)}
-                        sx={{
-                            borderRadius: 2,
-                            mb: 0.5,
-                            "&.Mui-selected": {
-                                bgcolor: "primary.main",
-                                color: "primary.contrastText",
-                                "& .MuiListItemIcon-root": { color: "primary.contrastText" },
-                                "&:hover": { bgcolor: "primary.dark" },
-                            },
-                        }}
-                    >
-                        <ListItemIcon sx={{ minWidth: 36 }}>{item.icon}</ListItemIcon>
-                        <ListItemText
-                            primary={item.label}
-                            slotProps={{ primary: { sx: { fontSize: 14, fontWeight: 600 } } }}
-                        />
-                        {!!item.badge && (
-                            <Badge
-                                badgeContent={item.badge}
-                                color={tab === item.tab ? "default" : "warning"}
-                                sx={
-                                    tab === item.tab
-                                        ? { "& .MuiBadge-badge": { bgcolor: "primary.contrastText", color: "primary.main" } }
-                                        : undefined
-                                }
+            <List sx={{ flex: 1, px: 2, py: 1 }}>
+                {navItems.map((item) => {
+                    const active = tab === item.tab;
+
+                    return (
+                        <ListItemButton
+                            key={item.tab}
+                            selected={active}
+                            onClick={() => goTo(item.tab)}
+                            sx={{
+                                position: "relative",
+                                minHeight: 44,
+                                mb: 0.5,
+                                px: 1.5,
+                                borderRadius: 2,
+                                color: active ? "primary.main" : "text.secondary",
+                                "&:hover": { color: active ? "primary.main" : "text.primary" },
+                                "&.Mui-selected": {
+                                    bgcolor: "transparent",
+                                    "&:hover": { bgcolor: alpha(theme.palette.primary.main, 0.04) },
+                                },
+                            }}
+                        >
+                            {active && (
+                                <motion.span
+                                    layoutId={`admin-nav-active-${instance}`}
+                                    transition={SPRING_SNAPPY}
+                                    style={{
+                                        position: "absolute",
+                                        inset: 0,
+                                        borderRadius: 8,
+                                        background: alpha(theme.palette.primary.main, 0.09),
+                                    }}
+                                />
+                            )}
+
+                            <ListItemIcon sx={{ minWidth: 36, color: "inherit", position: "relative" }}>{item.icon}</ListItemIcon>
+
+                            <ListItemText
+                                primary={item.label}
+                                sx={{ position: "relative" }}
+                                slotProps={{ primary: { sx: { fontSize: 14, fontWeight: active ? 700 : 600 } } }}
                             />
-                        )}
-                    </ListItemButton>
-                ))}
+
+                            {!!item.badge && (
+                                <Box
+                                    component="span"
+                                    sx={{
+                                        position: "relative",
+                                        minWidth: 22,
+                                        height: 22,
+                                        px: 0.75,
+                                        borderRadius: 999,
+                                        display: "grid",
+                                        placeItems: "center",
+                                        fontSize: 12,
+                                        fontWeight: 700,
+                                        color: "warning.darker",
+                                        bgcolor: alpha(theme.palette.warning.main, 0.22),
+                                    }}
+                                >
+                                    {item.badge}
+                                </Box>
+                            )}
+                        </ListItemButton>
+                    );
+                })}
             </List>
 
-            <Divider />
-
-            <Box sx={{ p: 1.5 }}>
-                <Button
-                    fullWidth
-                    component={RouterLink}
-                    to="/"
-                    target="_blank"
-                    color="inherit"
-                    startIcon={<OpenInNewIcon fontSize="small" />}
-                    sx={{ justifyContent: "flex-start", mb: 0.5 }}
-                >
-                    View site
-                </Button>
-                <Button
-                    fullWidth
-                    color="inherit"
-                    startIcon={<LogoutIcon fontSize="small" />}
-                    onClick={() => void handleSignOut()}
-                    sx={{ justifyContent: "flex-start" }}
-                >
-                    Sign out
-                </Button>
+            <Box sx={{ p: 2 }}>
+                <Box sx={{ p: 1, borderRadius: 3, bgcolor: "background.neutral" }}>
+                    <Button
+                        fullWidth
+                        component={RouterLink}
+                        to="/"
+                        target="_blank"
+                        color="inherit"
+                        startIcon={<OpenInNewIcon fontSize="small" />}
+                        sx={{ justifyContent: "flex-start", mb: 0.5, color: "text.secondary", "&:hover": { color: "text.primary" } }}
+                    >
+                        View site
+                    </Button>
+                    <Button
+                        fullWidth
+                        color="inherit"
+                        startIcon={<LogoutIcon fontSize="small" />}
+                        onClick={() => void handleSignOut()}
+                        sx={{ justifyContent: "flex-start", color: "text.secondary", "&:hover": { color: "error.main" } }}
+                    >
+                        Sign out
+                    </Button>
+                </Box>
             </Box>
         </Box>
     );
 
     const isAuthed = session.status === "ready" && session.authenticated;
+
+    const glassBar = {
+        bgcolor: alpha(theme.palette.background.paper, 0.8),
+        backdropFilter: "blur(16px) saturate(180%)",
+        WebkitBackdropFilter: "blur(16px) saturate(180%)",
+        borderBottom: `1px solid ${theme.palette.divider}`,
+    };
 
     return (
         <Box sx={{ minHeight: "100vh", bgcolor: "background.default" }}>
@@ -194,13 +270,13 @@ const Admin = () => {
             />
 
             {!isAuthed && (
-                <AppBar position="static" color="transparent" elevation={0} sx={{ borderBottom: 1, borderColor: "divider" }}>
-                    <Toolbar>
-                        <SpaIcon color="primary" sx={{ mr: 1 }} />
+                <AppBar position="sticky" color="transparent" elevation={0} sx={glassBar}>
+                    <Toolbar sx={{ gap: 1.5 }}>
+                        <BrandMark size={34} />
                         <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
                             AyuAura Admin
                         </Typography>
-                        <Button component={RouterLink} to="/" color="inherit" size="small">
+                        <Button component={RouterLink} to="/" color="inherit" size="small" startIcon={<OpenInNewIcon fontSize="small" />}>
                             View site
                         </Button>
                     </Toolbar>
@@ -208,8 +284,15 @@ const Admin = () => {
             )}
 
             {session.status === "loading" && (
-                <Box sx={{ display: "flex", justifyContent: "center", py: 12 }}>
-                    <CircularProgress color="primary" />
+                <Box sx={{ display: "flex", justifyContent: "center", py: 16 }}>
+                    <motion.div
+                        animate={{ scale: [1, 1.1, 1], opacity: [0.6, 1, 0.6] }}
+                        transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+                        aria-label="Loading"
+                        role="status"
+                    >
+                        <BrandMark size={56} />
+                    </motion.div>
                 </Box>
             )}
 
@@ -237,20 +320,16 @@ const Admin = () => {
                         position="fixed"
                         color="default"
                         elevation={0}
-                        sx={{
-                            display: { xs: "block", md: "none" },
-                            borderBottom: 1,
-                            borderColor: "divider",
-                            bgcolor: "background.paper",
-                        }}
+                        sx={{ ...glassBar, display: { xs: "block", md: "none" } }}
                     >
                         <Toolbar>
-                            <IconButton edge="start" onClick={() => setMobileOpen(true)} sx={{ mr: 1.5 }}>
-                                <MenuIcon />
+                            <IconButton edge="start" onClick={() => setMobileOpen(true)} sx={{ mr: 1.5 }} aria-label="Open menu">
+                                <MenuRoundedIcon />
                             </IconButton>
                             <Typography variant="subtitle1" sx={{ fontWeight: 700, flexGrow: 1 }}>
                                 {currentLabel}
                             </Typography>
+                            <BrandMark size={32} />
                         </Toolbar>
                     </AppBar>
 
@@ -265,7 +344,7 @@ const Admin = () => {
                                 "& .MuiDrawer-paper": { width: DRAWER_WIDTH },
                             }}
                         >
-                            {sidebarContent}
+                            {renderSidebar("mobile")}
                         </Drawer>
 
                         <Drawer
@@ -274,13 +353,12 @@ const Admin = () => {
                                 display: { xs: "none", md: "block" },
                                 "& .MuiDrawer-paper": {
                                     width: DRAWER_WIDTH,
-                                    borderRight: 1,
-                                    borderColor: "divider",
+                                    borderRight: `1px dashed ${alpha(theme.palette.grey[500], 0.24)}`,
                                 },
                             }}
                             open
                         >
-                            {sidebarContent}
+                            {renderSidebar("desktop")}
                         </Drawer>
                     </Box>
 
@@ -289,25 +367,36 @@ const Admin = () => {
                         sx={{
                             flexGrow: 1,
                             minWidth: 0,
-                            px: { xs: 2.5, md: 4 },
+                            px: { xs: 2, sm: 3, md: 5 },
                             py: { xs: 3, md: 5 },
                             mt: { xs: 7, md: 0 },
                         }}
                     >
-                        {tab === "overview" && (
-                            <AdminOverview
-                                onSummary={({ pendingOrders: po, pendingReviews: pr }) => {
-                                    setPendingOrders(po);
-                                    setPendingReviews(pr);
-                                }}
-                                onNavigate={goTo}
-                            />
-                        )}
-                        {tab === "products" && <AdminDashboard />}
-                        {tab === "orders" && <AdminOrders initialStatusFilter={ordersStatusFilter} />}
-                        {tab === "categories" && <AdminCategories />}
-                        {tab === "coupons" && <AdminCoupons />}
-                        {tab === "reviews" && <AdminReviews />}
+                        <Box sx={{ maxWidth: 1400, mx: "auto" }}>
+                            <AnimatePresence mode="wait" initial={false}>
+                                <motion.div
+                                    key={tab}
+                                    initial={{ opacity: 0, y: 14 }}
+                                    animate={{ opacity: 1, y: 0, transition: { duration: 0.4, ease: EASE_OUT } }}
+                                    exit={{ opacity: 0, y: -6, transition: { duration: 0.15 } }}
+                                >
+                                    {tab === "overview" && (
+                                        <AdminOverview
+                                            onSummary={({ pendingOrders: po, pendingReviews: pr }) => {
+                                                setPendingOrders(po);
+                                                setPendingReviews(pr);
+                                            }}
+                                            onNavigate={goTo}
+                                        />
+                                    )}
+                                    {tab === "products" && <AdminDashboard />}
+                                    {tab === "orders" && <AdminOrders initialStatusFilter={ordersStatusFilter} />}
+                                    {tab === "categories" && <AdminCategories />}
+                                    {tab === "coupons" && <AdminCoupons />}
+                                    {tab === "reviews" && <AdminReviews />}
+                                </motion.div>
+                            </AnimatePresence>
+                        </Box>
                     </Box>
                 </Box>
             )}

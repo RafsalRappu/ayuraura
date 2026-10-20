@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 import { motion } from "framer-motion";
 
+import { EASE_OUT } from "../../../theme/motion";
+
 interface RevealProps {
     children: ReactNode;
     delay?: number;
@@ -9,13 +11,15 @@ interface RevealProps {
 }
 
 /** Fades/slides content up as it scrolls into view. Animates once per mount. */
-const Reveal = ({ children, delay = 0, y = 24, className }: RevealProps) => (
+const Reveal = ({ children, delay = 0, y = 28, className }: RevealProps) => (
     <motion.div
         className={className}
         initial={{ opacity: 0, y }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-60px" }}
-        transition={{ duration: 0.5, delay, ease: "easeOut" }}
+        transition={{ duration: 0.8, delay, ease: EASE_OUT }}
+        // Fills its grid cell so cards in one row keep equal heights.
+        style={{ height: "100%" }}
     >
         {children}
     </motion.div>

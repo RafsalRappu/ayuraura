@@ -6,7 +6,7 @@ export const siteConfig = {
     url: "https://ayuaura.example.com",
     ogImage: "/og-image.jpg",
     locale: "en_IN",
-    themeColor: "#355E3B",
+    themeColor: "#0F766E",
 
     contact: {
         whatsappNumber: "918943380593",

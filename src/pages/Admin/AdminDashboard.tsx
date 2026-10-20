@@ -37,6 +37,7 @@ import { createProduct, deleteProduct, fetchProducts, updateProduct } from "../.
 import type { ProductPayload } from "../../api/products";
 import { useProducts } from "../../data/useProducts";
 import type { Product } from "../../types/product";
+import ProductMedia from "../../components/products/ProductMedia";
 import ProductForm from "./ProductForm";
 import TableSkeletonRows from "./TableSkeletonRows";
 
@@ -239,28 +240,19 @@ const AdminDashboard = () => {
                                     <TableCell>
                                         <Box
                                             sx={{
+                                                position: "relative",
                                                 width: 48,
                                                 height: 48,
-                                                borderRadius: 2,
+                                                borderRadius: 3,
                                                 overflow: "hidden",
-                                                bgcolor: "#f8f8f6",
+                                                bgcolor: "background.neutral",
                                                 display: "flex",
                                                 alignItems: "center",
                                                 justifyContent: "center",
                                             }}
                                         >
-                                            {product.image ? (
-                                                <Box
-                                                    component="img"
-                                                    src={product.image}
-                                                    alt=""
-                                                    sx={{ width: "100%", height: "100%", objectFit: "cover" }}
-                                                />
-                                            ) : (
-                                                <Typography variant="caption" color="text.secondary">
-                                                    {product.icon}
-                                                </Typography>
-                                            )}
+                                            {/* Same artwork the shop shows: the photo, or the product-type icon tile. */}
+                                            <ProductMedia product={product} iconSize="1.4rem" fit="cover" />
                                         </Box>
                                     </TableCell>
 

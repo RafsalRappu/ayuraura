@@ -24,15 +24,15 @@ const FeaturedProducts = () => {
                 subtitle="Crafted with authentic Ayurvedic ingredients for everyday skincare."
             />
 
-            <Grid container spacing={4}>
+            <Grid container spacing={3}>
                 {status === "loading"
                     ? Array.from({ length: 3 }, (_, index) => (
-                          <Grid key={index} size={{ xs: 12, md: 4 }}>
+                          <Grid key={index} size={{ xs: 12, sm: 6, md: 4 }}>
                               <ProductCardSkeleton />
                           </Grid>
                       ))
                     : featured.map((product, index) => (
-                          <Grid key={product.id} size={{ xs: 12, md: 4 }}>
+                          <Grid key={product.id} size={{ xs: 12, sm: 6, md: 4 }}>
                               <Reveal delay={Math.min(index, 6) * 0.08}>
                                   <ProductCard product={product} />
                               </Reveal>

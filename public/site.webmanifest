@@ -4,8 +4,8 @@
   "description": "Handcrafted Ayurvedic skincare formulated by a qualified Ayurvedic practitioner.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#F9F7F2",
-  "theme_color": "#355E3B",
+  "background_color": "#FFFFFF",
+  "theme_color": "#0F766E",
   "icons": [
     {
       "src": "/favicon.svg",

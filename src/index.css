@@ -1,13 +1,15 @@
 :root {
-  --brand-primary: #355e3b;
-  --brand-primary-rgb: 53, 94, 59;
+  /* Overwritten at runtime from the active theme preset (ThemePresetProvider). */
+  --brand-primary: #0f766e;
+  --brand-primary-rgb: 15, 118, 110;
+  --brand-secondary: #f5a524;
 
   color-scheme: light;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
 }
 
 *,

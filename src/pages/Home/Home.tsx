@@ -1,6 +1,7 @@
 import Hero from "../../components/home/Hero/Hero";
 import FeaturedProducts from "../../components/home/FeaturedProducts/FeaturedProducts";
 import TrustBand from "../../components/home/TrustBand";
+import IngredientMarquee from "../../components/home/IngredientMarquee";
 import Testimonials from "../../components/home/Testimonials";
 import SocialProof from "../../components/home/SocialProof";
 import FAQSection from "../../components/home/FAQSection";
@@ -14,6 +15,7 @@ const Home = () => {
 
             <Hero />
             <TrustBand />
+            <IngredientMarquee />
             <FeaturedProducts />
             <Testimonials />
             <SocialProof />

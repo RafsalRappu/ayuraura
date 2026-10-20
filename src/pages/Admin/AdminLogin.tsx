@@ -73,7 +73,7 @@ const AdminLogin = ({ configured, onSignedIn }: AdminLoginProps) => {
                     borderRadius: 5,
                     border: "1px solid",
                     borderColor: "divider",
-                    boxShadow: (theme) => `0 24px 60px -24px ${alpha(theme.palette.primary.main, 0.25)}`,
+                    boxShadow: (theme) => theme.customShadows.z24,
                 }}
             >
                 <Box sx={{ textAlign: "center", mb: 4 }}>

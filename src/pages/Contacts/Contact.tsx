@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
-import { Box, Grid, Link, Stack, TextField, Typography } from "@mui/material";
+import { Box, Card, Grid, Link, Stack, TextField, Typography } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import PlaceOutlinedIcon from "@mui/icons-material/PlaceOutlined";
@@ -11,9 +12,11 @@ import SectionTitle from "../../components/common/SectionTitle";
 import Breadcrumbs from "../../components/common/Breadcrumbs";
 import CustomButton from "../../components/common/CustomButton";
 import SEO from "../../components/common/SEO";
+import Reveal from "../../components/common/Reveal";
 
 import { siteConfig, whatsappLink } from "../../config/site";
 import { breadcrumbSchema } from "../../utils/structuredData";
+import { CSS_EASE_OUT } from "../../theme/motion";
 
 const infoItems = [
     {
@@ -81,98 +84,121 @@ const Contact = () => {
                 subtitle="Questions about a product, your skin type, or a bulk order? Send us a message and we'll reply personally."
             />
 
-            <Grid container spacing={6}>
+            <Grid container spacing={{ xs: 4, md: 5 }}>
                 <Grid size={{ xs: 12, md: 5 }}>
-                    <Stack spacing={4}>
-                        {infoItems.map((item) => {
+                    <Stack spacing={2}>
+                        {infoItems.map((item, index) => {
                             const Icon = item.icon;
                             return (
-                                <Stack key={item.title} direction="row" spacing={2} sx={{ alignItems: "flex-start" }}>
-                                    <Box
-                                        sx={{
-                                            width: 48,
-                                            height: 48,
-                                            borderRadius: "50%",
-                                            bgcolor: "success.main",
+                                <Reveal key={item.title} delay={index * 0.07} y={16}>
+                                    <Card
+                                        sx={(theme) => ({
+                                            p: 2.5,
                                             display: "flex",
+                                            gap: 2,
                                             alignItems: "center",
-                                            justifyContent: "center",
-                                            flexShrink: 0,
-                                        }}
+                                            transition: `transform .45s ${CSS_EASE_OUT}, box-shadow .45s ${CSS_EASE_OUT}`,
+                                            "&:hover": { transform: "translateX(4px)", boxShadow: theme.customShadows.z12 },
+                                        })}
                                     >
-                                        <Icon sx={{ color: "#fff", fontSize: 22 }} />
-                                    </Box>
+                                        <Box
+                                            sx={(theme) => ({
+                                                width: 48,
+                                                height: 48,
+                                                borderRadius: 3.5,
+                                                display: "grid",
+                                                placeItems: "center",
+                                                flexShrink: 0,
+                                                color: "primary.main",
+                                                bgcolor: alpha(theme.palette.primary.main, 0.1),
+                                            })}
+                                        >
+                                            <Icon sx={{ fontSize: 22 }} />
+                                        </Box>
 
-                                    <Box>
-                                        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                                            {item.title}
-                                        </Typography>
+                                        <Box sx={{ minWidth: 0 }}>
+                                            <Typography variant="overline" component="div" sx={{ color: "text.secondary", lineHeight: 1.6 }}>
+                                                {item.title}
+                                            </Typography>
 
-                                        {item.href ? (
-                                            <Link
-                                                href={item.href}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                underline="hover"
-                                                color="text.secondary"
-                                            >
-                                                {item.detail}
-                                            </Link>
-                                        ) : (
-                                            <Typography color="text.secondary">{item.detail}</Typography>
-                                        )}
-                                    </Box>
-                                </Stack>
+                                            {item.href ? (
+                                                <Link
+                                                    href={item.href}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    underline="hover"
+                                                    sx={{ color: "text.primary", fontWeight: 600, wordBreak: "break-word" }}
+                                                >
+                                                    {item.detail}
+                                                </Link>
+                                            ) : (
+                                                <Typography sx={{ fontWeight: 600 }}>{item.detail}</Typography>
+                                            )}
+                                        </Box>
+                                    </Card>
+                                </Reveal>
                             );
                         })}
                     </Stack>
                 </Grid>
 
                 <Grid size={{ xs: 12, md: 7 }}>
-                    <Box
-                        component="form"
-                        onSubmit={handleSubmit}
-                        noValidate
-                        sx={{ bgcolor: "#F9F7F2", borderRadius: 6, p: { xs: 3, md: 5 } }}
-                    >
-                        <Typography variant="h5" gutterBottom>
-                            Send a Message
-                        </Typography>
+                    <Reveal delay={0.1}>
+                        <Card
+                            component="form"
+                            onSubmit={handleSubmit}
+                            noValidate
+                            sx={(theme) => ({
+                                p: { xs: 3, md: 5 },
+                                boxShadow: theme.customShadows.z20,
+                                backgroundImage: `radial-gradient(circle at 100% 0%, ${alpha(theme.palette.primary.light, 0.14)}, transparent 50%)`,
+                            })}
+                        >
+                            <Typography variant="h4" component="h2" gutterBottom>
+                                Send a Message
+                            </Typography>
 
-                        <Typography color="text.secondary" sx={{ mb: 3 }}>
-                            We'll open WhatsApp with your message pre-filled so you can send it directly.
-                        </Typography>
+                            <Typography color="text.secondary" sx={{ mb: 3 }}>
+                                We'll open WhatsApp with your message pre-filled so you can send it directly.
+                            </Typography>
 
-                        <Stack spacing={3}>
-                            <TextField
-                                label="Your Name"
-                                value={name}
-                                onChange={(event) => setName(event.target.value)}
-                                fullWidth
-                                required
-                            />
+                            <Stack spacing={2.5}>
+                                <TextField
+                                    label="Your Name"
+                                    value={name}
+                                    onChange={(event) => setName(event.target.value)}
+                                    fullWidth
+                                    required
+                                />
 
-                            <TextField
-                                label="Your Message"
-                                value={message}
-                                onChange={(event) => setMessage(event.target.value)}
-                                fullWidth
-                                required
-                                multiline
-                                minRows={4}
-                            />
+                                <TextField
+                                    label="Your Message"
+                                    value={message}
+                                    onChange={(event) => setMessage(event.target.value)}
+                                    fullWidth
+                                    required
+                                    multiline
+                                    minRows={5}
+                                />
 
-                            {error && (
-                                <Typography color="error" variant="body2">
-                                    {error}
-                                </Typography>
-                            )}
+                                {error && (
+                                    <Typography color="error" variant="body2">
+                                        {error}
+                                    </Typography>
+                                )}
 
-                            <CustomButton type="submit" variant="contained" size="large" startIcon={<WhatsAppIcon />}>
-                                Send via WhatsApp
-                            </CustomButton>
-                        </Stack>
-                    </Box>
+                                <CustomButton
+                                    type="submit"
+                                    variant="contained"
+                                    size="large"
+                                    startIcon={<WhatsAppIcon />}
+                                    sx={(theme) => ({ alignSelf: { sm: "flex-start" }, boxShadow: theme.customShadows.primary })}
+                                >
+                                    Send via WhatsApp
+                                </CustomButton>
+                            </Stack>
+                        </Card>
+                    </Reveal>
                 </Grid>
             </Grid>
         </PageContainer>

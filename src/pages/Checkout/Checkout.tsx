@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
-import { Alert, Box, CircularProgress, Divider, Stack, TextField, Typography } from "@mui/material";
+import { Alert, Avatar, Box, Card, CircularProgress, Divider, Grid, Stack, TextField, Typography } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 
 import PageContainer from "../../components/common/PageContainer";
@@ -20,6 +21,29 @@ import { siteConfig, whatsappLink } from "../../config/site";
 import type { CheckoutItemInput, Order } from "../../types/order";
 
 type Stage = "form" | "awaiting-payment" | "payment-unavailable" | "payment-cancelled";
+
+const StepHeading = ({ index, title }: { index: number; title: string }) => (
+    <Stack direction="row" spacing={1.5} sx={{ alignItems: "center", mb: 2.5 }}>
+        <Box
+            sx={(theme) => ({
+                width: 28,
+                height: 28,
+                borderRadius: "50%",
+                display: "grid",
+                placeItems: "center",
+                fontSize: "0.8125rem",
+                fontWeight: 800,
+                color: "primary.dark",
+                bgcolor: alpha(theme.palette.primary.main, 0.12),
+            })}
+        >
+            {index}
+        </Box>
+        <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+            {title}
+        </Typography>
+    </Stack>
+);
 
 const Checkout = () => {
     const navigate = useNavigate();
@@ -190,234 +214,286 @@ const Checkout = () => {
 
             <Breadcrumbs items={[{ label: "Home", path: "/" }, { label: "Checkout", path: "/checkout" }]} />
 
-            <Typography variant="h1" component="h1" sx={{ fontSize: { xs: "2.2rem", md: "2.6rem" }, mb: 4 }}>
+            <Typography variant="h1" component="h1" sx={{ fontSize: { xs: "2.4rem", md: "3rem" }, mb: { xs: 3, md: 4 } }}>
                 Checkout
             </Typography>
 
-            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 6, maxWidth: 900 }}>
-                <Box sx={{ flex: "1 1 320px" }}>
-                    {stage === "form" && (
-                        <Box component="form" onSubmit={(event) => void handleSubmit(event)}>
-                            {error && (
-                                <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
-                                    {error}
-                                </Alert>
-                            )}
-
-                            <Stack spacing={2.5}>
-                                <TextField
-                                    label="Full name"
-                                    value={name}
-                                    onChange={(event) => setName(event.target.value)}
-                                    required
-                                    fullWidth
-                                    autoFocus
-                                />
-                                <TextField
-                                    label="Phone number"
-                                    value={phone}
-                                    onChange={(event) => setPhone(event.target.value)}
-                                    required
-                                    fullWidth
-                                />
-                                <TextField
-                                    label="Email (optional)"
-                                    type="email"
-                                    value={email}
-                                    onChange={(event) => setEmail(event.target.value)}
-                                    fullWidth
-                                />
-                                <TextField
-                                    label="Address line 1 (optional)"
-                                    value={addressLine1}
-                                    onChange={(event) => setAddressLine1(event.target.value)}
-                                    fullWidth
-                                    helperText="You can also arrange delivery details over WhatsApp after ordering."
-                                />
-                                <TextField
-                                    label="Address line 2 (optional)"
-                                    value={addressLine2}
-                                    onChange={(event) => setAddressLine2(event.target.value)}
-                                    fullWidth
-                                />
-                                <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-                                    <TextField
-                                        label="City (optional)"
-                                        value={city}
-                                        onChange={(event) => setCity(event.target.value)}
-                                        fullWidth
-                                        sx={{ flex: 1 }}
-                                    />
-                                    <TextField
-                                        label="State (optional)"
-                                        value={state}
-                                        onChange={(event) => setState(event.target.value)}
-                                        fullWidth
-                                        sx={{ flex: 1 }}
-                                    />
-                                    <TextField
-                                        label="PIN code"
-                                        value={pincode}
-                                        onChange={(event) => setPincode(event.target.value.replace(/\D/g, ""))}
-                                        fullWidth
-                                        helperText="Optional"
-                                        sx={{ flex: 1.3, minWidth: 120 }}
-                                        slotProps={{ htmlInput: { maxLength: 6, inputMode: "numeric" } }}
-                                    />
-                                </Stack>
-
-                                {appliedCoupon ? (
-                                    <Alert
-                                        severity="success"
-                                        onClose={removeCoupon}
-                                        sx={{ "& .MuiAlert-message": { flex: 1 } }}
-                                    >
-                                        Code <strong>{appliedCoupon.code}</strong> applied — ₹
-                                        {appliedCoupon.discountAmount} off.
+            <Grid container spacing={{ xs: 3, md: 4 }} sx={{ alignItems: "flex-start" }}>
+                <Grid size={{ xs: 12, md: 7, lg: 8 }}>
+                    <Card sx={{ p: { xs: 2.5, sm: 3, md: 4 } }}>
+                        {stage === "form" && (
+                            <Box component="form" onSubmit={(event) => void handleSubmit(event)}>
+                                {error && (
+                                    <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
+                                        {error}
                                     </Alert>
-                                ) : (
-                                    <Stack direction="row" spacing={1.5} sx={{ alignItems: "flex-start" }}>
+                                )}
+
+                                <StepHeading index={1} title="Contact details" />
+
+                                <Stack spacing={2.5}>
+                                    <TextField
+                                        label="Full name"
+                                        value={name}
+                                        onChange={(event) => setName(event.target.value)}
+                                        required
+                                        fullWidth
+                                        autoFocus
+                                    />
+                                    <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
                                         <TextField
-                                            label="Coupon code (optional)"
-                                            value={couponInput}
-                                            onChange={(event) => {
-                                                setCouponInput(event.target.value);
-                                                setCouponError(null);
-                                            }}
-                                            error={Boolean(couponError)}
-                                            helperText={couponError ?? " "}
+                                            label="Phone number"
+                                            value={phone}
+                                            onChange={(event) => setPhone(event.target.value)}
+                                            required
                                             fullWidth
                                         />
-                                        <CustomButton
-                                            variant="outlined"
-                                            onClick={() => void handleApplyCoupon()}
-                                            disabled={couponChecking || !couponInput.trim()}
-                                            startIcon={couponChecking ? <CircularProgress size={16} /> : undefined}
-                                            sx={{ mt: 0.5, whiteSpace: "nowrap" }}
-                                        >
-                                            Apply
-                                        </CustomButton>
+                                        <TextField
+                                            label="Email (optional)"
+                                            type="email"
+                                            value={email}
+                                            onChange={(event) => setEmail(event.target.value)}
+                                            fullWidth
+                                        />
                                     </Stack>
-                                )}
+                                </Stack>
 
-                                <CustomButton
-                                    type="submit"
-                                    variant="contained"
-                                    size="large"
-                                    disabled={submitting || missing}
-                                    startIcon={submitting ? <CircularProgress size={16} /> : undefined}
-                                >
-                                    {submitting ? "Placing order…" : "Place order"}
-                                </CustomButton>
-                            </Stack>
-                        </Box>
-                    )}
+                                <Divider sx={{ my: 4, borderStyle: "dashed" }} />
 
-                    {stage === "awaiting-payment" && (
-                        <Box sx={{ py: 6, textAlign: "center" }}>
-                            <CircularProgress color="primary" sx={{ mb: 2 }} />
-                            <Typography color="text.secondary">
-                                Complete your payment in the window that opened.
-                            </Typography>
-                        </Box>
-                    )}
+                                <StepHeading index={2} title="Delivery address" />
 
-                    {(stage === "payment-unavailable" || stage === "payment-cancelled") && order && (
-                        <Box>
-                            {error && (
-                                <Alert severity="warning" sx={{ mb: 3 }}>
-                                    {error}
-                                </Alert>
-                            )}
+                                <Stack spacing={2.5}>
+                                    <TextField
+                                        label="Address line 1 (optional)"
+                                        value={addressLine1}
+                                        onChange={(event) => setAddressLine1(event.target.value)}
+                                        fullWidth
+                                        helperText="You can also arrange delivery details over WhatsApp after ordering."
+                                    />
+                                    <TextField
+                                        label="Address line 2 (optional)"
+                                        value={addressLine2}
+                                        onChange={(event) => setAddressLine2(event.target.value)}
+                                        fullWidth
+                                    />
+                                    <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+                                        <TextField
+                                            label="City (optional)"
+                                            value={city}
+                                            onChange={(event) => setCity(event.target.value)}
+                                            fullWidth
+                                            sx={{ flex: 1 }}
+                                        />
+                                        <TextField
+                                            label="State (optional)"
+                                            value={state}
+                                            onChange={(event) => setState(event.target.value)}
+                                            fullWidth
+                                            sx={{ flex: 1 }}
+                                        />
+                                        <TextField
+                                            label="PIN code"
+                                            value={pincode}
+                                            onChange={(event) => setPincode(event.target.value.replace(/\D/g, ""))}
+                                            fullWidth
+                                            helperText="Optional"
+                                            sx={{ flex: 1.3, minWidth: 120 }}
+                                            slotProps={{ htmlInput: { maxLength: 6, inputMode: "numeric" } }}
+                                        />
+                                    </Stack>
+                                </Stack>
 
-                            <Alert severity="success" sx={{ mb: 3 }}>
-                                Order #{orderShortCode(order.publicId)} placed
-                                {stage === "payment-cancelled" ? " — payment was cancelled." : "."}
-                            </Alert>
+                                <Divider sx={{ my: 4, borderStyle: "dashed" }} />
 
-                            <Typography color="text.secondary" sx={{ mb: 3 }}>
-                                {stage === "payment-unavailable"
-                                    ? "Online payment isn't set up yet — send us the order over WhatsApp and we'll confirm payment with you directly."
-                                    : "You can try paying again, or confirm the order over WhatsApp instead."}
-                            </Typography>
+                                <StepHeading index={3} title="Place your order" />
 
-                            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-                                {stage === "payment-cancelled" && (
+                                <Stack spacing={2.5}>
+                                    {appliedCoupon ? (
+                                        <Alert
+                                            severity="success"
+                                            onClose={removeCoupon}
+                                            sx={{ "& .MuiAlert-message": { flex: 1 } }}
+                                        >
+                                            Code <strong>{appliedCoupon.code}</strong> applied — ₹
+                                            {appliedCoupon.discountAmount} off.
+                                        </Alert>
+                                    ) : (
+                                        <Stack direction="row" spacing={1.5} sx={{ alignItems: "flex-start" }}>
+                                            <TextField
+                                                label="Coupon code (optional)"
+                                                value={couponInput}
+                                                onChange={(event) => {
+                                                    setCouponInput(event.target.value);
+                                                    setCouponError(null);
+                                                }}
+                                                error={Boolean(couponError)}
+                                                helperText={couponError ?? " "}
+                                                fullWidth
+                                            />
+                                            <CustomButton
+                                                variant="outlined"
+                                                onClick={() => void handleApplyCoupon()}
+                                                disabled={couponChecking || !couponInput.trim()}
+                                                startIcon={couponChecking ? <CircularProgress size={16} color="inherit" /> : undefined}
+                                                sx={{ minHeight: 56, whiteSpace: "nowrap" }}
+                                            >
+                                                Apply
+                                            </CustomButton>
+                                        </Stack>
+                                    )}
+
                                     <CustomButton
+                                        type="submit"
                                         variant="contained"
                                         size="large"
-                                        onClick={() => void startPayment(order)}
+                                        disabled={submitting || missing}
+                                        startIcon={submitting ? <CircularProgress size={16} color="inherit" /> : undefined}
+                                        sx={(theme) => ({ py: 1.6, boxShadow: submitting || missing ? "none" : theme.customShadows.primary })}
                                     >
-                                        Retry payment
+                                        {submitting ? "Placing order…" : "Place order"}
                                     </CustomButton>
+                                </Stack>
+                            </Box>
+                        )}
+
+                        {stage === "awaiting-payment" && (
+                            <Box sx={{ py: 8, textAlign: "center" }}>
+                                <CircularProgress color="primary" sx={{ mb: 2 }} />
+                                <Typography color="text.secondary">
+                                    Complete your payment in the window that opened.
+                                </Typography>
+                            </Box>
+                        )}
+
+                        {(stage === "payment-unavailable" || stage === "payment-cancelled") && order && (
+                            <Box>
+                                {error && (
+                                    <Alert severity="warning" sx={{ mb: 3 }}>
+                                        {error}
+                                    </Alert>
                                 )}
 
-                                <CustomButton
-                                    variant="outlined"
-                                    size="large"
-                                    startIcon={<WhatsAppIcon />}
-                                    component="a"
-                                    href={whatsappLink(buildOrderWhatsAppMessage(order.items, order.publicId))}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                >
-                                    Confirm via WhatsApp
-                                </CustomButton>
-                            </Stack>
-                        </Box>
-                    )}
-                </Box>
+                                <Alert severity="success" sx={{ mb: 3 }}>
+                                    Order #{orderShortCode(order.publicId)} placed
+                                    {stage === "payment-cancelled" ? " — payment was cancelled." : "."}
+                                </Alert>
 
-                <Box sx={{ flex: "1 1 280px", maxWidth: 360 }}>
-                    <Typography variant="h6" sx={{ mb: 2 }}>
-                        Order summary
-                    </Typography>
-
-                    <Stack spacing={1.5} sx={{ mb: 2 }}>
-                        {(order?.items ?? items).map((item) => (
-                            <Stack
-                                key={`${item.slug}::${item.variantLabel ?? ""}`}
-                                direction="row"
-                                sx={{ justifyContent: "space-between" }}
-                            >
-                                <Typography variant="body2" color="text.secondary">
-                                    {item.name}
-                                    {item.variantLabel ? ` (${item.variantLabel})` : ""} × {item.quantity}
+                                <Typography color="text.secondary" sx={{ mb: 3 }}>
+                                    {stage === "payment-unavailable"
+                                        ? "Online payment isn't set up yet — send us the order over WhatsApp and we'll confirm payment with you directly."
+                                        : "You can try paying again, or confirm the order over WhatsApp instead."}
                                 </Typography>
-                                <Typography variant="body2">₹{item.price * item.quantity}</Typography>
-                            </Stack>
-                        ))}
-                    </Stack>
 
-                    <Divider sx={{ mb: 2 }} />
+                                <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+                                    {stage === "payment-cancelled" && (
+                                        <CustomButton
+                                            variant="contained"
+                                            size="large"
+                                            onClick={() => void startPayment(order)}
+                                        >
+                                            Retry payment
+                                        </CustomButton>
+                                    )}
 
-                    {summaryDiscount > 0 && (
-                        <Stack spacing={0.5} sx={{ mb: 2 }}>
-                            <Stack direction="row" sx={{ justifyContent: "space-between" }}>
-                                <Typography variant="body2" color="text.secondary">
-                                    Subtotal
-                                </Typography>
-                                <Typography variant="body2">₹{summarySubtotal}</Typography>
-                            </Stack>
-                            <Stack direction="row" sx={{ justifyContent: "space-between" }}>
-                                <Typography variant="body2" color="success.main">
-                                    Discount{summaryCode ? ` (${summaryCode})` : ""}
-                                </Typography>
-                                <Typography variant="body2" color="success.main">
-                                    −₹{summaryDiscount}
-                                </Typography>
-                            </Stack>
-                        </Stack>
-                    )}
+                                    <CustomButton
+                                        variant="outlined"
+                                        size="large"
+                                        startIcon={<WhatsAppIcon />}
+                                        component="a"
+                                        href={whatsappLink(buildOrderWhatsAppMessage(order.items, order.publicId))}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        Confirm via WhatsApp
+                                    </CustomButton>
+                                </Stack>
+                            </Box>
+                        )}
+                    </Card>
+                </Grid>
 
-                    <Stack direction="row" sx={{ justifyContent: "space-between" }}>
-                        <Typography sx={{ fontWeight: 600 }}>Total</Typography>
-                        <Typography sx={{ fontWeight: 700 }} color="primary">
-                            ₹{summarySubtotal - summaryDiscount}
+                <Grid size={{ xs: 12, md: 5, lg: 4 }}>
+                    <Card sx={{ p: { xs: 2.5, md: 3 }, position: { md: "sticky" }, top: { md: 96 } }}>
+                        <Typography variant="h6" sx={{ mb: 2.5 }}>
+                            Order summary
                         </Typography>
-                    </Stack>
-                </Box>
-            </Box>
+
+                        <Stack spacing={2} sx={{ mb: 2.5 }}>
+                            {(order?.items ?? items).map((item) => (
+                                <Stack
+                                    key={`${item.slug}::${item.variantLabel ?? ""}`}
+                                    direction="row"
+                                    spacing={1.5}
+                                    sx={{ alignItems: "center" }}
+                                >
+                                    <Avatar
+                                        src={item.image}
+                                        variant="rounded"
+                                        alt=""
+                                        sx={(theme) => ({
+                                            width: 48,
+                                            height: 48,
+                                            bgcolor: "background.neutral",
+                                            color: "primary.main",
+                                            border: `1px solid ${alpha(theme.palette.grey[500], 0.12)}`,
+                                        })}
+                                    >
+                                        {item.name.charAt(0)}
+                                    </Avatar>
+
+                                    <Typography variant="body2" color="text.secondary" sx={{ flex: 1, minWidth: 0 }}>
+                                        <Box component="span" sx={{ color: "text.primary", fontWeight: 600 }}>
+                                            {item.name}
+                                        </Box>
+                                        {item.variantLabel ? ` (${item.variantLabel})` : ""} × {item.quantity}
+                                    </Typography>
+
+                                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                        ₹{item.price * item.quantity}
+                                    </Typography>
+                                </Stack>
+                            ))}
+                        </Stack>
+
+                        <Divider sx={{ mb: 2, borderStyle: "dashed" }} />
+
+                        {summaryDiscount > 0 && (
+                            <Stack spacing={0.75} sx={{ mb: 2 }}>
+                                <Stack direction="row" sx={{ justifyContent: "space-between" }}>
+                                    <Typography variant="body2" color="text.secondary">
+                                        Subtotal
+                                    </Typography>
+                                    <Typography variant="body2">₹{summarySubtotal}</Typography>
+                                </Stack>
+                                <Stack direction="row" sx={{ justifyContent: "space-between" }}>
+                                    <Typography variant="body2" color="success.dark">
+                                        Discount{summaryCode ? ` (${summaryCode})` : ""}
+                                    </Typography>
+                                    <Typography variant="body2" color="success.dark">
+                                        −₹{summaryDiscount}
+                                    </Typography>
+                                </Stack>
+                            </Stack>
+                        )}
+
+                        <Stack
+                            direction="row"
+                            sx={(theme) => ({
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                p: 2,
+                                borderRadius: 3,
+                                bgcolor: alpha(theme.palette.primary.main, 0.06),
+                            })}
+                        >
+                            <Typography sx={{ fontWeight: 700 }}>Total</Typography>
+                            <Typography sx={{ fontWeight: 800, fontSize: "1.25rem" }} color="primary">
+                                ₹{summarySubtotal - summaryDiscount}
+                            </Typography>
+                        </Stack>
+                    </Card>
+                </Grid>
+            </Grid>
         </PageContainer>
     );
 };

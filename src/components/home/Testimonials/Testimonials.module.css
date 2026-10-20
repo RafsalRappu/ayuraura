@@ -1,5 +1,7 @@
+/* Room around the slides so card shadows and the hover lift aren't clipped. */
 .swiper {
-    padding-bottom: 48px !important;
+    padding: 12px 6px 56px !important;
+    margin: -12px -6px 0 !important;
 }
 
 .swiper :global(.swiper-slide) {
@@ -8,10 +10,15 @@
 }
 
 .swiper :global(.swiper-pagination-bullet) {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
     background: var(--brand-primary);
-    opacity: 0.3;
+    opacity: 0.24;
+    transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s;
 }
 
 .swiper :global(.swiper-pagination-bullet-active) {
+    width: 28px;
     opacity: 1;
 }

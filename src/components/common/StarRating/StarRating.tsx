@@ -1,7 +1,7 @@
 import { Box, Typography } from "@mui/material";
-import StarIcon from "@mui/icons-material/Star";
-import StarHalfIcon from "@mui/icons-material/StarHalf";
-import StarOutlineIcon from "@mui/icons-material/StarOutlined";
+import StarRoundedIcon from "@mui/icons-material/StarRounded";
+import StarHalfRoundedIcon from "@mui/icons-material/StarHalfRounded";
+import StarOutlineRoundedIcon from "@mui/icons-material/StarOutlineRounded";
 
 interface StarRatingProps {
     value: number;
@@ -19,19 +19,22 @@ const StarRating = ({ value, reviewCount, size = 18 }: StarRatingProps) => {
             sx={{ display: "flex", alignItems: "center", gap: 0.75 }}
             aria-label={`Rated ${value} out of 5${reviewCount ? ` from ${reviewCount} reviews` : ""}`}
         >
-            <Box sx={{ display: "flex", color: "#D9A441" }} aria-hidden="true">
+            <Box sx={{ display: "flex", color: "warning.main" }} aria-hidden="true">
                 {Array.from({ length: fullStars }).map((_, i) => (
-                    <StarIcon key={`full-${i}`} sx={{ fontSize: size }} />
+                    <StarRoundedIcon key={`full-${i}`} sx={{ fontSize: size }} />
                 ))}
-                {hasHalfStar && <StarHalfIcon sx={{ fontSize: size }} />}
+                {hasHalfStar && <StarHalfRoundedIcon sx={{ fontSize: size }} />}
                 {Array.from({ length: emptyStars }).map((_, i) => (
-                    <StarOutlineIcon key={`empty-${i}`} sx={{ fontSize: size }} />
+                    <StarOutlineRoundedIcon key={`empty-${i}`} sx={{ fontSize: size, color: "text.disabled" }} />
                 ))}
             </Box>
 
             {reviewCount !== undefined && (
-                <Typography variant="body2" color="text.secondary">
-                    {value.toFixed(1)} ({reviewCount})
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                    {value.toFixed(1)}{" "}
+                    <Box component="span" sx={{ color: "text.disabled" }}>
+                        ({reviewCount})
+                    </Box>
                 </Typography>
             )}
         </Box>

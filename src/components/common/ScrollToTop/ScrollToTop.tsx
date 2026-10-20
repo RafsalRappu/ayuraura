@@ -5,7 +5,9 @@ const ScrollToTop = () => {
     const { pathname } = useLocation();
 
     useEffect(() => {
-        window.scrollTo(0, 0);
+        // "instant" so a route change jumps to the top instead of animating
+        // through the old page (the page itself fades in).
+        window.scrollTo({ top: 0, left: 0, behavior: "instant" });
     }, [pathname]);
 
     return null;

@@ -1,6 +1,5 @@
-import { Breadcrumbs as MuiBreadcrumbs, Link, Typography } from "@mui/material";
+import { Box, Breadcrumbs as MuiBreadcrumbs, Link, Typography } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
-import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 
 export interface BreadcrumbItem {
     label: string;
@@ -11,16 +10,30 @@ interface BreadcrumbsProps {
     items: BreadcrumbItem[];
 }
 
+const Separator = () => (
+    <Box
+        component="span"
+        sx={{ width: 4, height: 4, borderRadius: "50%", bgcolor: "text.disabled", display: "inline-block" }}
+    />
+);
+
 const Breadcrumbs = ({ items }: BreadcrumbsProps) => {
     return (
         <MuiBreadcrumbs
             aria-label="breadcrumb"
-            separator={<NavigateNextIcon fontSize="small" />}
-            sx={{ mb: 4, "& .MuiBreadcrumbs-li": { display: "flex" } }}
+            separator={<Separator />}
+            sx={{ mb: { xs: 3, md: 4 }, fontSize: "0.875rem", "& .MuiBreadcrumbs-li": { display: "flex" } }}
         >
             {items.map((item, index) =>
                 index === items.length - 1 ? (
-                    <Typography key={item.path} color="text.primary" aria-current="page">
+                    <Typography
+                        key={item.path}
+                        variant="body2"
+                        color="text.disabled"
+                        aria-current="page"
+                        sx={{ fontWeight: 500, maxWidth: { xs: 180, sm: "none" } }}
+                        noWrap
+                    >
                         {item.label}
                     </Typography>
                 ) : (
@@ -29,7 +42,8 @@ const Breadcrumbs = ({ items }: BreadcrumbsProps) => {
                         component={RouterLink}
                         to={item.path}
                         underline="hover"
-                        color="inherit"
+                        variant="body2"
+                        sx={{ color: "text.primary", fontWeight: 500 }}
                     >
                         {item.label}
                     </Link>

@@ -1,15 +1,16 @@
 import { Link as RouterLink, Navigate, useParams } from "react-router-dom";
 import {
     Alert,
+    Avatar,
     Box,
+    Button,
+    Card,
     Chip,
     CircularProgress,
     Divider,
-    List,
-    ListItem,
-    ListItemIcon,
-    ListItemText,
+    Grid,
     Rating,
+    Skeleton,
     Stack,
     Tab,
     Tabs,
@@ -18,11 +19,15 @@ import {
     ToggleButtonGroup,
     Typography,
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
+import { AnimatePresence, motion } from "framer-motion";
 import { useCallback, useEffect, useState } from "react";
 import type { FormEvent } from "react";
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutlined";
+import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
+import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
+import SpaOutlinedIcon from "@mui/icons-material/SpaOutlined";
 
 import PageContainer from "../../components/common/PageContainer";
 import CustomButton from "../../components/common/CustomButton";
@@ -40,11 +45,54 @@ import { fetchProductReviews, submitReview } from "../../api/reviews";
 import type { Review, ReviewSummary } from "../../types/review";
 import { whatsappLink } from "../../config/site";
 import { breadcrumbSchema, productSchema } from "../../utils/structuredData";
+import { CSS_EASE_OUT, EASE_OUT, fadeUpItem, staggerContainer } from "../../theme/motion";
 
 type ReviewsState =
     | { status: "loading" }
     | { status: "ready"; reviews: Review[]; summary: ReviewSummary }
     | { status: "error"; message: string };
+
+const mediaPanelSx = {
+    position: "relative",
+    borderRadius: 7,
+    overflow: "hidden",
+    height: { xs: 360, sm: 440, md: 560 },
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    bgcolor: "background.neutral",
+} as const;
+
+/** Same two-column frame as the loaded page, so content doesn't jump in. */
+const ProductDetailsSkeleton = () => (
+    <Grid container spacing={{ xs: 4, md: 8 }} sx={{ mb: { xs: 8, md: 10 } }}>
+        <Grid size={{ xs: 12, md: 6 }}>
+            <Skeleton variant="rounded" sx={{ ...mediaPanelSx, borderRadius: 7 }} />
+        </Grid>
+        <Grid size={{ xs: 12, md: 6 }}>
+            <Skeleton variant="rounded" width={96} height={26} sx={{ mb: 2 }} />
+            <Skeleton variant="text" width="80%" height={64} />
+            <Skeleton variant="text" width={160} sx={{ mb: 2 }} />
+            <Skeleton variant="text" width={110} height={48} sx={{ mb: 2 }} />
+            <Skeleton variant="text" width="100%" />
+            <Skeleton variant="text" width="95%" />
+            <Skeleton variant="text" width="70%" sx={{ mb: 3 }} />
+            <Stack direction="row" spacing={2}>
+                <Skeleton variant="rounded" width={180} height={50} sx={{ borderRadius: 999 }} />
+                <Skeleton variant="rounded" width={200} height={50} sx={{ borderRadius: 999 }} />
+            </Stack>
+        </Grid>
+    </Grid>
+);
+
+const initials = (name: string) =>
+    name
+        .split(/\s+/)
+        .map((part) => part.charAt(0))
+        .join("")
+        .replace(/[^A-Za-z]/g, "")
+        .slice(0, 2)
+        .toUpperCase() || "★";
 
 const ProductDetails = () => {
     const { slug } = useParams<{ slug: string }>();
@@ -83,9 +131,8 @@ const ProductDetails = () => {
         if (status === "loading") {
             return (
                 <PageContainer>
-                    <Box sx={{ display: "flex", justifyContent: "center", py: 12 }}>
-                        <CircularProgress color="primary" />
-                    </Box>
+                    <Skeleton variant="text" width={220} sx={{ mb: { xs: 3, md: 4 } }} />
+                    <ProductDetailsSkeleton />
                 </PageContainer>
             );
         }
@@ -146,155 +193,231 @@ const ProductDetails = () => {
 
             <Breadcrumbs items={crumbs} />
 
-            <Box
-                sx={{
-                    display: "flex",
-                    flexWrap: "wrap",
-                    gap: { xs: 4, md: 8 },
-                    mb: { xs: 8, md: 10 },
-                }}
-            >
-                <Box
-                    sx={{
-                        width: { xs: "100%", md: "45%" },
-                        position: "relative",
-                        borderRadius: 6,
-                        overflow: "hidden",
-                        height: { xs: 340, md: 480 },
-                    }}
-                >
-                    <ProductMedia product={product} iconSize="7rem" />
+            <Grid container spacing={{ xs: 4, md: 8 }} sx={{ mb: { xs: 8, md: 10 } }}>
+                <Grid size={{ xs: 12, md: 6 }}>
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.97 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.9, ease: EASE_OUT }}
+                        style={{ position: "sticky", top: 96 }}
+                    >
+                        <Box
+                            sx={(theme) => ({
+                                ...mediaPanelSx,
+                                backgroundImage: `radial-gradient(circle at 50% 40%, ${alpha(theme.palette.primary.light, 0.2)}, transparent 65%)`,
+                                "&:hover [data-media-hover]": { transform: "scale(1.06)" },
+                            })}
+                        >
+                            <ProductMedia product={product} iconSize="7rem" />
 
-                    {(product.bestseller || product.newArrival) && (
-                        <Chip
-                            label={product.bestseller ? "Bestseller" : "New Arrival"}
-                            color={product.bestseller ? "secondary" : "success"}
-                            sx={{ position: "absolute", top: 20, left: 20 }}
-                        />
-                    )}
-                </Box>
-
-                <Box sx={{ flex: 1, minWidth: 280 }}>
-                    <Chip label={product.category} color="success" variant="outlined" sx={{ mb: 2 }} />
-
-                    <Typography variant="h1" component="h1" sx={{ fontSize: { xs: "2.4rem", md: "3rem" }, mb: 1 }}>
-                        {product.name}
-                    </Typography>
-
-                    {displayRating && (
-                        <Box sx={{ mb: 2 }}>
-                            <StarRating value={displayRating.value} reviewCount={displayRating.reviewCount} />
+                            {(product.bestseller || product.newArrival) && (
+                                <Chip
+                                    label={product.bestseller ? "Bestseller" : "New Arrival"}
+                                    color={product.bestseller ? "secondary" : "primary"}
+                                    sx={{ position: "absolute", top: 20, left: 20, bgcolor: "background.paper" }}
+                                />
+                            )}
                         </Box>
-                    )}
+                    </motion.div>
+                </Grid>
 
-                    <Typography variant="h4" color="primary" sx={{ mb: 3, fontWeight: 700 }}>
-                        ₹{effectivePrice}
-                    </Typography>
-
-                    <Typography color="text.secondary" sx={{ mb: 4, fontSize: "1.05rem" }}>
-                        {product.description}
-                    </Typography>
-
-                    {product.benefits.length > 0 && (
-                        <List dense sx={{ mb: 3 }}>
-                            {product.benefits.map((benefit) => (
-                                <ListItem key={benefit} disableGutters sx={{ py: 0.5 }}>
-                                    <ListItemIcon sx={{ minWidth: 32 }}>
-                                        <CheckCircleOutlineIcon color="success" fontSize="small" />
-                                    </ListItemIcon>
-                                    <ListItemText primary={benefit} />
-                                </ListItem>
-                            ))}
-                        </List>
-                    )}
-
-                    {product.variants.length > 0 && (
-                        <Box sx={{ mb: 3 }}>
-                            <Typography variant="body2" sx={{ mb: 1, fontWeight: 600 }}>
-                                Size
-                            </Typography>
-                            <ToggleButtonGroup
-                                exclusive
-                                value={variantIndex}
-                                onChange={(_, value) => value !== null && setVariantIndex(value)}
-                                size="small"
-                            >
-                                {product.variants.map((variant, index) => (
-                                    <ToggleButton key={variant.label} value={index}>
-                                        {variant.label} — ₹{variant.price}
-                                    </ToggleButton>
-                                ))}
-                            </ToggleButtonGroup>
-                        </Box>
-                    )}
-
-                    {product.inStock ? (
-                        <>
-                            <Stack direction="row" spacing={2} sx={{ mb: 3, alignItems: "center" }}>
-                                <QuantityStepper value={quantity} onChange={setQuantity} />
-                            </Stack>
-
-                            <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mb: 3 }}>
-                                <CustomButton
-                                    variant="contained"
-                                    size="large"
-                                    startIcon={<AddShoppingCartIcon />}
-                                    onClick={() =>
-                                        addItem(
-                                            {
-                                                slug: product.slug,
-                                                name: product.name,
-                                                image: product.image,
-                                                price: effectivePrice,
-                                                variantLabel: selectedVariant?.label,
-                                            },
-                                            quantity
-                                        )
-                                    }
-                                >
-                                    Add to Cart
-                                </CustomButton>
-
-                                <CustomButton
+                <Grid size={{ xs: 12, md: 6 }}>
+                    <motion.div variants={staggerContainer(0.07)} initial="hidden" animate="show">
+                        <motion.div variants={fadeUpItem}>
+                            <Stack direction="row" spacing={1} sx={{ mb: 2, alignItems: "center" }}>
+                                <Chip label={product.category} color="primary" size="small" />
+                                <Chip
+                                    label={product.inStock ? "In stock" : "Out of stock"}
+                                    color={product.inStock ? "success" : "default"}
+                                    size="small"
                                     variant="outlined"
-                                    size="large"
-                                    startIcon={<WhatsAppIcon />}
-                                    component="a"
-                                    href={whatsappLink(
-                                        `Hi AyuAura, I'd like to order the ${product.name}${orderLabel} x${quantity} (₹${effectivePrice * quantity}).`
-                                    )}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                >
-                                    Order via WhatsApp
-                                </CustomButton>
+                                />
                             </Stack>
-                        </>
-                    ) : (
-                        <Typography color="text.secondary" sx={{ mb: 3, fontStyle: "italic" }}>
-                            Currently out of stock.
-                        </Typography>
-                    )}
 
-                    <CustomButton variant="outlined" size="large" component={RouterLink} to="/products" sx={{ mb: 3 }}>
-                        Continue Browsing
-                    </CustomButton>
+                            <Typography variant="h1" component="h1" sx={{ fontSize: { xs: "2.6rem", md: "3.5rem" }, mb: 1.5 }}>
+                                {product.name}
+                            </Typography>
 
-                    <Typography variant="body2" color="text.secondary">
-                        Free consultation on skin type &amp; usage included with every order.
-                    </Typography>
-                </Box>
-            </Box>
+                            {displayRating && (
+                                <Box sx={{ mb: 2.5 }}>
+                                    <StarRating value={displayRating.value} reviewCount={displayRating.reviewCount} />
+                                </Box>
+                            )}
 
-            <Divider sx={{ mb: 4 }} />
+                            <Typography
+                                component="p"
+                                sx={{ mb: 3, fontWeight: 800, fontSize: { xs: "2rem", md: "2.25rem" }, letterSpacing: "-0.02em", lineHeight: 1.2 }}
+                            >
+                                ₹{effectivePrice}
+                            </Typography>
+                        </motion.div>
 
-            <Box sx={{ mb: { xs: 8, md: 10 } }}>
+                        <motion.div variants={fadeUpItem}>
+                            <Typography color="text.secondary" sx={{ mb: 3.5, fontSize: "1.0625rem", lineHeight: 1.75 }}>
+                                {product.description}
+                            </Typography>
+                        </motion.div>
+
+                        {product.benefits.length > 0 && (
+                            <motion.div variants={fadeUpItem}>
+                                <Box
+                                    component="ul"
+                                    sx={{
+                                        listStyle: "none",
+                                        p: 0,
+                                        m: 0,
+                                        mb: 3.5,
+                                        display: "grid",
+                                        gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)" },
+                                        gap: 1.5,
+                                    }}
+                                >
+                                    {product.benefits.map((benefit) => (
+                                        <Box component="li" key={benefit} sx={{ display: "flex", alignItems: "center", gap: 1.25 }}>
+                                            <Box
+                                                sx={(theme) => ({
+                                                    width: 24,
+                                                    height: 24,
+                                                    flexShrink: 0,
+                                                    borderRadius: "50%",
+                                                    display: "grid",
+                                                    placeItems: "center",
+                                                    color: "success.dark",
+                                                    bgcolor: alpha(theme.palette.success.main, 0.14),
+                                                })}
+                                            >
+                                                <CheckRoundedIcon sx={{ fontSize: 15 }} />
+                                            </Box>
+                                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                                {benefit}
+                                            </Typography>
+                                        </Box>
+                                    ))}
+                                </Box>
+                            </motion.div>
+                        )}
+
+                        <motion.div variants={fadeUpItem}>
+                            {product.variants.length > 0 && (
+                                <Box sx={{ mb: 3 }}>
+                                    <Typography variant="overline" component="div" sx={{ mb: 1, color: "text.secondary" }}>
+                                        Size
+                                    </Typography>
+                                    <ToggleButtonGroup
+                                        exclusive
+                                        value={variantIndex}
+                                        onChange={(_, value) => value !== null && setVariantIndex(value)}
+                                        size="small"
+                                    >
+                                        {product.variants.map((variant, index) => (
+                                            <ToggleButton key={variant.label} value={index}>
+                                                {variant.label} — ₹{variant.price}
+                                            </ToggleButton>
+                                        ))}
+                                    </ToggleButtonGroup>
+                                </Box>
+                            )}
+
+                            {product.inStock ? (
+                                <>
+                                    <Stack
+                                        direction={{ xs: "column", sm: "row" }}
+                                        spacing={2}
+                                        sx={{ mb: 2, alignItems: { xs: "stretch", sm: "center" } }}
+                                    >
+                                        <Box sx={{ alignSelf: { xs: "flex-start", sm: "center" } }}>
+                                            <QuantityStepper value={quantity} onChange={setQuantity} />
+                                        </Box>
+
+                                        <CustomButton
+                                            variant="contained"
+                                            size="large"
+                                            startIcon={<AddShoppingCartIcon />}
+                                            onClick={() =>
+                                                addItem(
+                                                    {
+                                                        slug: product.slug,
+                                                        name: product.name,
+                                                        image: product.image,
+                                                        price: effectivePrice,
+                                                        variantLabel: selectedVariant?.label,
+                                                    },
+                                                    quantity
+                                                )
+                                            }
+                                            sx={(theme) => ({ flex: 1, boxShadow: theme.customShadows.primary })}
+                                        >
+                                            Add to Cart
+                                        </CustomButton>
+                                    </Stack>
+
+                                    <CustomButton
+                                        variant="outlined"
+                                        size="large"
+                                        fullWidth
+                                        startIcon={<WhatsAppIcon />}
+                                        component="a"
+                                        href={whatsappLink(
+                                            `Hi AyuAura, I'd like to order the ${product.name}${orderLabel} x${quantity} (₹${effectivePrice * quantity}).`
+                                        )}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        sx={{ mb: 2 }}
+                                    >
+                                        Order via WhatsApp
+                                    </CustomButton>
+                                </>
+                            ) : (
+                                <Typography color="text.secondary" sx={{ mb: 3, fontStyle: "italic" }}>
+                                    Currently out of stock.
+                                </Typography>
+                            )}
+
+                            <Button
+                                component={RouterLink}
+                                to="/products"
+                                color="inherit"
+                                startIcon={<ArrowBackRoundedIcon />}
+                                sx={{
+                                    mb: 3,
+                                    color: "text.secondary",
+                                    "& .MuiButton-startIcon": { transition: `transform .4s ${CSS_EASE_OUT}` },
+                                    "&:hover .MuiButton-startIcon": { transform: "translateX(-3px)" },
+                                }}
+                            >
+                                Continue Browsing
+                            </Button>
+
+                            <Box
+                                sx={(theme) => ({
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 1.5,
+                                    p: 2,
+                                    borderRadius: 4,
+                                    bgcolor: alpha(theme.palette.primary.main, 0.06),
+                                    border: `1px dashed ${alpha(theme.palette.primary.main, 0.24)}`,
+                                })}
+                            >
+                                <SpaOutlinedIcon color="primary" />
+                                <Typography variant="body2" color="text.secondary">
+                                    Free consultation on skin type &amp; usage included with every order.
+                                </Typography>
+                            </Box>
+                        </motion.div>
+                    </motion.div>
+                </Grid>
+            </Grid>
+
+            <Card sx={{ mb: { xs: 8, md: 10 }, p: { xs: 2.5, md: 4 } }}>
                 <Tabs
                     value={tab}
                     onChange={(_, value) => setTab(value)}
-                    sx={{ mb: 3 }}
+                    sx={{ mb: 3, borderBottom: 1, borderColor: "divider" }}
                     textColor="primary"
                     indicatorColor="primary"
+                    variant="scrollable"
+                    allowScrollButtonsMobile
                 >
                     <Tab label="Ingredients" value="ingredients" />
                     {product.howToUse && <Tab label="How to Use" value="howToUse" />}
@@ -304,121 +427,177 @@ const ProductDetails = () => {
                     />
                 </Tabs>
 
-                {tab === "ingredients" && (
-                    <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: "wrap" }}>
-                        {product.ingredients.map((ingredient) => (
-                            <Chip key={ingredient} label={ingredient} variant="outlined" />
-                        ))}
-                    </Stack>
-                )}
-
-                {tab === "howToUse" && product.howToUse && (
-                    <Typography color="text.secondary">{product.howToUse}</Typography>
-                )}
-
-                {tab === "reviews" && (
-                    <Box sx={{ maxWidth: 640 }}>
-                        {reviewsState.status === "loading" && (
-                            <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
-                                <CircularProgress size={28} />
-                            </Box>
-                        )}
-
-                        {reviewsState.status === "error" && <Alert severity="error">{reviewsState.message}</Alert>}
-
-                        {reviewsState.status === "ready" && (
-                            <Stack spacing={3} sx={{ mb: 4 }}>
-                                {reviewsState.reviews.length === 0 ? (
-                                    <Typography color="text.secondary">
-                                        No reviews yet — be the first to write one.
-                                    </Typography>
-                                ) : (
-                                    reviewsState.reviews.map((review) => (
-                                        <Box key={review.id}>
-                                            <Stack direction="row" spacing={1.5} sx={{ alignItems: "center", mb: 0.5 }}>
-                                                <Typography sx={{ fontWeight: 600 }}>{review.authorName}</Typography>
-                                                <StarRating value={review.rating} size={14} />
-                                            </Stack>
-                                            <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 1 }}>
-                                                {new Date(review.createdAt).toLocaleDateString()}
-                                            </Typography>
-                                            <Typography color="text.secondary">{review.comment}</Typography>
-                                        </Box>
-                                    ))
-                                )}
+                <AnimatePresence mode="wait" initial={false}>
+                    <motion.div
+                        key={tab}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -6 }}
+                        transition={{ duration: 0.3, ease: EASE_OUT }}
+                    >
+                        {tab === "ingredients" && (
+                            <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: "wrap" }}>
+                                {product.ingredients.map((ingredient) => (
+                                    <Chip
+                                        key={ingredient}
+                                        label={ingredient}
+                                        icon={<SpaOutlinedIcon />}
+                                        sx={{ height: 36, px: 0.5, fontSize: "0.875rem" }}
+                                    />
+                                ))}
                             </Stack>
                         )}
 
-                        <Divider sx={{ mb: 3 }} />
+                        {tab === "howToUse" && product.howToUse && (
+                            <Typography color="text.secondary" sx={{ maxWidth: 760, lineHeight: 1.8 }}>
+                                {product.howToUse}
+                            </Typography>
+                        )}
 
-                        <Typography variant="h6" sx={{ mb: 2 }}>
-                            Write a review
-                        </Typography>
+                        {tab === "reviews" && (
+                            <Box sx={{ maxWidth: 720 }}>
+                                {reviewsState.status === "loading" && (
+                                    <Stack spacing={3} sx={{ mb: 4 }}>
+                                        {Array.from({ length: 2 }, (_, index) => (
+                                            <Stack key={index} direction="row" spacing={2}>
+                                                <Skeleton variant="circular" width={40} height={40} />
+                                                <Box sx={{ flex: 1 }}>
+                                                    <Skeleton variant="text" width="30%" />
+                                                    <Skeleton variant="text" width="90%" />
+                                                    <Skeleton variant="text" width="60%" />
+                                                </Box>
+                                            </Stack>
+                                        ))}
+                                    </Stack>
+                                )}
 
-                        {reviewSubmitted ? (
-                            <Alert severity="success">Thanks — your review will appear once it's approved.</Alert>
-                        ) : (
-                            <Box component="form" onSubmit={(event) => void handleSubmitReview(event)}>
-                                {reviewError && (
-                                    <Alert severity="error" sx={{ mb: 2 }} onClose={() => setReviewError(null)}>
-                                        {reviewError}
+                                {reviewsState.status === "error" && (
+                                    <Alert severity="error" sx={{ mb: 3 }}>
+                                        {reviewsState.message}
                                     </Alert>
                                 )}
 
-                                <Stack spacing={2} sx={{ alignItems: "flex-start" }}>
-                                    <TextField
-                                        label="Your name"
-                                        value={reviewForm.authorName}
-                                        onChange={(event) =>
-                                            setReviewForm((form) => ({ ...form, authorName: event.target.value }))
-                                        }
-                                        required
-                                        fullWidth
-                                    />
+                                {reviewsState.status === "ready" && (
+                                    <Stack spacing={3} sx={{ mb: 4 }}>
+                                        {reviewsState.reviews.length === 0 ? (
+                                            <Typography color="text.secondary">
+                                                No reviews yet — be the first to write one.
+                                            </Typography>
+                                        ) : (
+                                            reviewsState.reviews.map((review) => (
+                                                <Stack key={review.id} direction="row" spacing={2}>
+                                                    <Avatar
+                                                        sx={(theme) => ({
+                                                            width: 40,
+                                                            height: 40,
+                                                            fontSize: "0.875rem",
+                                                            color: "primary.dark",
+                                                            bgcolor: alpha(theme.palette.primary.main, 0.12),
+                                                        })}
+                                                    >
+                                                        {initials(review.authorName)}
+                                                    </Avatar>
+                                                    <Box sx={{ minWidth: 0 }}>
+                                                        <Stack
+                                                            direction="row"
+                                                            spacing={1.5}
+                                                            sx={{ alignItems: "center", flexWrap: "wrap", mb: 0.25 }}
+                                                        >
+                                                            <Typography sx={{ fontWeight: 700 }}>{review.authorName}</Typography>
+                                                            <StarRating value={review.rating} size={14} />
+                                                        </Stack>
+                                                        <Typography
+                                                            variant="caption"
+                                                            color="text.disabled"
+                                                            sx={{ display: "block", mb: 1 }}
+                                                        >
+                                                            {new Date(review.createdAt).toLocaleDateString()}
+                                                        </Typography>
+                                                        <Typography color="text.secondary">{review.comment}</Typography>
+                                                    </Box>
+                                                </Stack>
+                                            ))
+                                        )}
+                                    </Stack>
+                                )}
 
-                                    <Box>
-                                        <Typography variant="body2" sx={{ mb: 0.5 }}>
-                                            Rating
-                                        </Typography>
-                                        <Rating
-                                            value={reviewForm.rating}
-                                            onChange={(_, value) =>
-                                                setReviewForm((form) => ({ ...form, rating: value ?? 0 }))
-                                            }
-                                        />
-                                    </Box>
+                                <Divider sx={{ mb: 3, borderStyle: "dashed" }} />
 
-                                    <TextField
-                                        label="Your review"
-                                        value={reviewForm.comment}
-                                        onChange={(event) =>
-                                            setReviewForm((form) => ({ ...form, comment: event.target.value }))
-                                        }
-                                        required
-                                        fullWidth
-                                        multiline
-                                        minRows={3}
-                                    />
+                                <Typography variant="h6" sx={{ mb: 2 }}>
+                                    Write a review
+                                </Typography>
 
-                                    <CustomButton
-                                        type="submit"
-                                        variant="contained"
-                                        disabled={
-                                            reviewSubmitting ||
-                                            !reviewForm.authorName.trim() ||
-                                            !reviewForm.comment.trim() ||
-                                            reviewForm.rating === 0
-                                        }
-                                        startIcon={reviewSubmitting ? <CircularProgress size={16} /> : undefined}
+                                {reviewSubmitted ? (
+                                    <Alert severity="success">Thanks — your review will appear once it's approved.</Alert>
+                                ) : (
+                                    <Box
+                                        component="form"
+                                        onSubmit={(event) => void handleSubmitReview(event)}
+                                        sx={{ p: { xs: 2.5, md: 3 }, borderRadius: 4, bgcolor: "background.neutral" }}
                                     >
-                                        Submit review
-                                    </CustomButton>
-                                </Stack>
+                                        {reviewError && (
+                                            <Alert severity="error" sx={{ mb: 2 }} onClose={() => setReviewError(null)}>
+                                                {reviewError}
+                                            </Alert>
+                                        )}
+
+                                        <Stack spacing={2} sx={{ alignItems: "flex-start" }}>
+                                            <TextField
+                                                label="Your name"
+                                                value={reviewForm.authorName}
+                                                onChange={(event) =>
+                                                    setReviewForm((form) => ({ ...form, authorName: event.target.value }))
+                                                }
+                                                required
+                                                fullWidth
+                                            />
+
+                                            <Box>
+                                                <Typography variant="body2" sx={{ mb: 0.5, fontWeight: 600 }}>
+                                                    Rating
+                                                </Typography>
+                                                <Rating
+                                                    value={reviewForm.rating}
+                                                    onChange={(_, value) =>
+                                                        setReviewForm((form) => ({ ...form, rating: value ?? 0 }))
+                                                    }
+                                                    size="large"
+                                                />
+                                            </Box>
+
+                                            <TextField
+                                                label="Your review"
+                                                value={reviewForm.comment}
+                                                onChange={(event) =>
+                                                    setReviewForm((form) => ({ ...form, comment: event.target.value }))
+                                                }
+                                                required
+                                                fullWidth
+                                                multiline
+                                                minRows={3}
+                                            />
+
+                                            <CustomButton
+                                                type="submit"
+                                                variant="contained"
+                                                disabled={
+                                                    reviewSubmitting ||
+                                                    !reviewForm.authorName.trim() ||
+                                                    !reviewForm.comment.trim() ||
+                                                    reviewForm.rating === 0
+                                                }
+                                                startIcon={reviewSubmitting ? <CircularProgress size={16} color="inherit" /> : undefined}
+                                            >
+                                                Submit review
+                                            </CustomButton>
+                                        </Stack>
+                                    </Box>
+                                )}
                             </Box>
                         )}
-                    </Box>
-                )}
-            </Box>
+                    </motion.div>
+                </AnimatePresence>
+            </Card>
 
             <RelatedProducts products={relatedProducts} />
         </PageContainer>

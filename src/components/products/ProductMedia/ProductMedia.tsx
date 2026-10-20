@@ -6,21 +6,25 @@ import GrassIcon from "@mui/icons-material/Grass";
 import SpaIcon from "@mui/icons-material/Spa";
 
 import type { Product } from "../../../types/product";
+import { CSS_EASE_OUT } from "../../../theme/motion";
 
+// Fixed per product type (not per theme preset) so a product keeps its look.
 const ICON_VARIANTS = {
-    lip: { Icon: ColorizeIcon, gradient: "linear-gradient(135deg, #FCEEF0, #F3CDD3)", color: "#B85763" },
-    face: { Icon: WaterDropIcon, gradient: "linear-gradient(135deg, #EEF5EC, #D3E6D5)", color: "#355E3B" },
-    eye: { Icon: VisibilityIcon, gradient: "linear-gradient(135deg, #EFEDF6, #D8D4E9)", color: "#4A4468" },
-    hair: { Icon: GrassIcon, gradient: "linear-gradient(135deg, #FBF1E1, #EFD8AC)", color: "#8A6321" },
-    body: { Icon: SpaIcon, gradient: "linear-gradient(135deg, #FDF1E4, #F1D6B4)", color: "#B38B59" },
+    lip: { Icon: ColorizeIcon, gradient: "linear-gradient(140deg, #FFF0F3 0%, #FAD4DC 100%)", color: "#C04A64" },
+    face: { Icon: WaterDropIcon, gradient: "linear-gradient(140deg, #EAFBF7 0%, #C6EDE4 100%)", color: "#11786C" },
+    eye: { Icon: VisibilityIcon, gradient: "linear-gradient(140deg, #F2F0FF 0%, #D9D4F5 100%)", color: "#5146A3" },
+    hair: { Icon: GrassIcon, gradient: "linear-gradient(140deg, #FFF7E6 0%, #F7DFAE 100%)", color: "#9A6A12" },
+    body: { Icon: SpaIcon, gradient: "linear-gradient(140deg, #FFF3E9 0%, #F8D8BC 100%)", color: "#B0662B" },
 } as const;
 
 interface ProductMediaProps {
     product: Product;
     iconSize?: string;
+    /** "contain" shows the whole product photo; "cover" fills the frame (thumbnails, tiles). */
+    fit?: "contain" | "cover";
 }
 
-const ProductMedia = ({ product, iconSize = "4.5rem" }: ProductMediaProps) => {
+const ProductMedia = ({ product, iconSize = "4.5rem", fit = "contain" }: ProductMediaProps) => {
     if (product.image) {
         return (
             <Box
@@ -30,10 +34,16 @@ const ProductMedia = ({ product, iconSize = "4.5rem" }: ProductMediaProps) => {
                 loading="lazy"
                 data-media-hover
                 sx={{
-                    width: "70%",
-                    height: "70%",
-                    objectFit: "contain",
-                    transition: "transform .5s",
+                    transition: `transform .7s ${CSS_EASE_OUT}`,
+                    ...(fit === "cover"
+                        ? { width: "100%", height: "100%", objectFit: "cover" }
+                        : {
+                              width: "72%",
+                              height: "72%",
+                              objectFit: "contain",
+                              // Follows the visible pixels, so letterboxed photos still get a soft lift.
+                              filter: "drop-shadow(0 18px 24px rgba(30, 42, 42, 0.14))",
+                          }),
                 }}
             />
         );
@@ -54,7 +64,7 @@ const ProductMedia = ({ product, iconSize = "4.5rem" }: ProductMediaProps) => {
                 alignItems: "center",
                 justifyContent: "center",
                 background: variant.gradient,
-                transition: "transform .5s",
+                transition: `transform .7s ${CSS_EASE_OUT}`,
             }}
         >
             <Icon sx={{ fontSize: iconSize, color: variant.color, opacity: 0.85 }} />

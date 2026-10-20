@@ -3,17 +3,20 @@ import { useSearchParams } from "react-router-dom";
 import {
     Alert,
     Box,
+    Button,
+    Card,
     Drawer,
     Grid,
-    IconButton,
     InputAdornment,
     TextField,
     Typography,
     useTheme,
     useMediaQuery,
 } from "@mui/material";
-import MenuIcon from "@mui/icons-material/Menu";
+import { alpha } from "@mui/material/styles";
+import TuneRoundedIcon from "@mui/icons-material/TuneRounded";
 import SearchIcon from "@mui/icons-material/Search";
+import SearchOffRoundedIcon from "@mui/icons-material/SearchOffRounded";
 
 import PageContainer from "../../components/common/PageContainer";
 import ProductsSidebar from "../../components/products/ProductsSidebar/ProductsSidebar";
@@ -98,43 +101,60 @@ const Products = () => {
 
             <Breadcrumbs items={[{ label: "Home", path: "/" }, { label: "Products", path: "/products" }]} />
 
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 4, flexWrap: "wrap", gap: 2 }}>
+            <Box
+                sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: { xs: "stretch", md: "flex-end" },
+                    flexDirection: { xs: "column", md: "row" },
+                    gap: 2,
+                    mb: { xs: 4, md: 5 },
+                }}
+            >
                 <Box sx={{ flex: 1, minWidth: 0 }}>
                     <SectionTitle
                         component="h1"
                         align="left"
+                        gutterBottom={false}
                         title="Shop Our Products"
                         subtitle="Browse our Ayurvedic skincare range for naturally glowing skin."
                     />
                 </Box>
 
-                <TextField
-                    value={query}
-                    onChange={(event) => setQuery(event.target.value)}
-                    placeholder="Search products…"
-                    size="small"
-                    sx={{ minWidth: { xs: "100%", sm: 260 } }}
-                    slotProps={{
-                        input: {
-                            startAdornment: (
-                                <InputAdornment position="start">
-                                    <SearchIcon fontSize="small" />
-                                </InputAdornment>
-                            ),
-                        },
-                    }}
-                />
+                <Box sx={{ display: "flex", gap: 1.5, alignItems: "center" }}>
+                    <TextField
+                        value={query}
+                        onChange={(event) => setQuery(event.target.value)}
+                        placeholder="Search products…"
+                        sx={{ flex: 1, minWidth: { sm: 300 } }}
+                        slotProps={{
+                            input: {
+                                sx: { borderRadius: 999, pl: 0.75 },
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <SearchIcon fontSize="small" />
+                                    </InputAdornment>
+                                ),
+                            },
+                        }}
+                    />
 
-                {isMobile && (
-                    <IconButton onClick={() => setSidebarOpen(true)}>
-                        <MenuIcon />
-                    </IconButton>
-                )}
+                    {isMobile && (
+                        <Button
+                            variant="outlined"
+                            onClick={() => setSidebarOpen(true)}
+                            startIcon={<TuneRoundedIcon />}
+                            sx={{ minHeight: 56, px: 2.5, flexShrink: 0 }}
+                        >
+                            Filters
+                        </Button>
+                    )}
+                </Box>
             </Box>
 
-            <Box sx={{ display: "flex", gap: 4, alignItems: "flex-start", flexWrap: "wrap" }}>
+            <Box sx={{ display: "flex", gap: 4, alignItems: "flex-start" }}>
                 {!isMobile && (
-                    <Box sx={{ width: 280, flexShrink: 0 }}>
+                    <Card sx={{ width: 280, flexShrink: 0, position: "sticky", top: 92 }}>
                         <ProductsSidebar
                             categories={categories}
                             selectedCategory={category}
@@ -142,7 +162,7 @@ const Products = () => {
                             onCategoryChange={setCategory}
                             onTagChange={setTag}
                         />
-                    </Box>
+                    </Card>
                 )}
 
                 <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -152,15 +172,24 @@ const Products = () => {
                         </Alert>
                     )}
 
-                    <Grid container spacing={4}>
+                    {status !== "loading" && filteredProducts.length > 0 && (
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                            <Box component="strong" sx={{ color: "text.primary" }}>
+                                {filteredProducts.length}
+                            </Box>{" "}
+                            product{filteredProducts.length === 1 ? "" : "s"}
+                        </Typography>
+                    )}
+
+                    <Grid container spacing={3}>
                         {status === "loading"
                             ? Array.from({ length: 6 }, (_, index) => (
-                                  <Grid key={index} size={{ xs: 12, sm: 6, md: 4 }}>
+                                  <Grid key={index} size={{ xs: 12, sm: 6, lg: 4 }}>
                                       <ProductCardSkeleton />
                                   </Grid>
                               ))
                             : filteredProducts.map((product: Product, index) => (
-                                  <Grid key={product.id} size={{ xs: 12, sm: 6, md: 4 }}>
+                                  <Grid key={product.id} size={{ xs: 12, sm: 6, lg: 4 }}>
                                       <Reveal delay={Math.min(index, 6) * 0.06}>
                                           <ProductCard product={product} />
                                       </Reveal>
@@ -169,11 +198,29 @@ const Products = () => {
                     </Grid>
 
                     {status !== "loading" && filteredProducts.length === 0 && (
-                        <Typography sx={{ textAlign: "center", color: "text.secondary", py: 8 }}>
-                            {query.trim()
-                                ? `No products match "${query.trim()}" — try a different search or filter.`
-                                : "No products match this filter yet — try another category."}
-                        </Typography>
+                        <Box sx={{ textAlign: "center", py: { xs: 8, md: 10 } }}>
+                            <Box
+                                sx={{
+                                    width: 72,
+                                    height: 72,
+                                    mx: "auto",
+                                    mb: 2.5,
+                                    borderRadius: "50%",
+                                    display: "grid",
+                                    placeItems: "center",
+                                    color: "primary.main",
+                                    bgcolor: alpha(theme.palette.primary.main, 0.08),
+                                }}
+                            >
+                                <SearchOffRoundedIcon sx={{ fontSize: 34 }} />
+                            </Box>
+
+                            <Typography sx={{ color: "text.secondary", maxWidth: 420, mx: "auto" }}>
+                                {query.trim()
+                                    ? `No products match "${query.trim()}" — try a different search or filter.`
+                                    : "No products match this filter yet — try another category."}
+                            </Typography>
+                        </Box>
                     )}
                 </Box>
             </Box>

@@ -281,7 +281,7 @@ const ProductForm = ({ product, categories, submitting, onSubmit, onCancel }: Pr
                             alignItems: "center",
                             justifyContent: "center",
                             overflow: "hidden",
-                            bgcolor: "#f8f8f6",
+                            bgcolor: "background.neutral",
                         }}
                     >
                         {form.image ? (

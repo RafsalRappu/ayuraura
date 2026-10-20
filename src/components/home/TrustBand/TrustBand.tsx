@@ -1,11 +1,12 @@
-import { Box, Grid, Typography } from "@mui/material";
+import { Box, Container, Typography } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import VerifiedUserOutlinedIcon from "@mui/icons-material/VerifiedUserOutlined";
 import SpaOutlinedIcon from "@mui/icons-material/SpaOutlined";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined";
 
-import PageContainer from "../../common/PageContainer";
 import Reveal from "../../common/Reveal";
+import { CSS_EASE_OUT } from "../../../theme/motion";
 
 const stats = [
     {
@@ -32,32 +33,57 @@ const stats = [
 
 const TrustBand = () => {
     return (
-        <PageContainer component="section">
-            <Grid container spacing={4}>
+        // Pulled up over the hero's lower edge so the band reads as one floating panel.
+        <Container component="section" maxWidth="xl" sx={{ position: "relative", zIndex: 2, mt: { xs: -5, md: -8 } }}>
+            <Box
+                sx={(theme) => ({
+                    display: "grid",
+                    gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", lg: "repeat(4, 1fr)" },
+                    gap: { xs: 1, lg: 0 },
+                    p: { xs: 1.5, md: 2 },
+                    borderRadius: 6,
+                    bgcolor: alpha(theme.palette.background.paper, 0.86),
+                    backdropFilter: "blur(16px)",
+                    border: `1px solid ${alpha(theme.palette.grey[500], 0.12)}`,
+                    boxShadow: theme.customShadows.z20,
+                })}
+            >
                 {stats.map((stat, index) => {
                     const Icon = stat.icon;
                     return (
-                        <Grid key={stat.title} size={{ xs: 12, sm: 6, md: 3 }}>
-                            <Reveal delay={index * 0.1}>
-                                <Box sx={{ textAlign: "center", px: 2 }}>
-                                    <Box
-                                        sx={{
-                                            width: 64,
-                                            height: 64,
-                                            borderRadius: "50%",
-                                            bgcolor: "success.main",
-                                            opacity: 0.9,
-                                            display: "flex",
-                                            alignItems: "center",
-                                            justifyContent: "center",
-                                            mx: "auto",
-                                            mb: 2,
-                                        }}
-                                    >
-                                        <Icon sx={{ color: "#fff", fontSize: 30 }} />
-                                    </Box>
+                        <Reveal key={stat.title} delay={index * 0.08} y={16}>
+                            <Box
+                                sx={(theme) => ({
+                                    height: "100%",
+                                    display: "flex",
+                                    alignItems: "flex-start",
+                                    gap: 2,
+                                    p: { xs: 2, md: 2.5 },
+                                    borderRadius: 4,
+                                    transition: `background-color .4s ${CSS_EASE_OUT}`,
+                                    "&:hover": { bgcolor: alpha(theme.palette.primary.main, 0.04) },
+                                    "&:hover .trust-icon": { transform: "rotate(-8deg) scale(1.06)" },
+                                })}
+                            >
+                                <Box
+                                    className="trust-icon"
+                                    sx={(theme) => ({
+                                        width: 48,
+                                        height: 48,
+                                        flexShrink: 0,
+                                        borderRadius: 3.5,
+                                        display: "grid",
+                                        placeItems: "center",
+                                        color: "primary.main",
+                                        bgcolor: alpha(theme.palette.primary.main, 0.1),
+                                        transition: `transform .5s ${CSS_EASE_OUT}`,
+                                    })}
+                                >
+                                    <Icon sx={{ fontSize: 24 }} />
+                                </Box>
 
-                                    <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 0.5 }}>
+                                <Box>
+                                    <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 0.5, lineHeight: 1.35 }}>
                                         {stat.title}
                                     </Typography>
 
@@ -65,12 +91,12 @@ const TrustBand = () => {
                                         {stat.description}
                                     </Typography>
                                 </Box>
-                            </Reveal>
-                        </Grid>
+                            </Box>
+                        </Reveal>
                     );
                 })}
-            </Grid>
-        </PageContainer>
+            </Box>
+        </Container>
     );
 };
 

@@ -10,7 +10,7 @@ import { faqSchema } from "../../../utils/structuredData";
 
 const FAQSection = () => {
     return (
-        <Box component="section" id="faq" sx={{ bgcolor: "#F3F0E8" }}>
+        <Box component="section" id="faq" sx={{ bgcolor: "background.neutral" }}>
             <Helmet>
                 <script type="application/ld+json">{JSON.stringify(faqSchema(faqs))}</script>
             </Helmet>
@@ -22,7 +22,7 @@ const FAQSection = () => {
                 />
 
                 <Reveal>
-                    <Box sx={{ maxWidth: 760, mx: "auto" }}>
+                    <Box sx={{ maxWidth: 780, mx: "auto" }}>
                         <FAQAccordion faqs={faqs} />
                     </Box>
                 </Reveal>
