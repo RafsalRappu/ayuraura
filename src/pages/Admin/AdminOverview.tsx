@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import type { ReactNode } from "react";
-import { Alert, Box, Button, Card, CircularProgress, Grid, Stack, Typography } from "@mui/material";
+import { Alert, Box, Button, Card, Grid, Skeleton, Stack, Typography } from "@mui/material";
 import PendingActionsIcon from "@mui/icons-material/PendingActions";
 import RateReviewOutlinedIcon from "@mui/icons-material/RateReviewOutlined";
 import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
@@ -66,6 +66,62 @@ const StatCard = ({ icon, label, value, tone = "default" }: StatCardProps) => (
     </Card>
 );
 
+const StatCardSkeleton = () => (
+    <Card variant="outlined" sx={{ p: 2.5, borderRadius: 3, display: "flex", alignItems: "center", gap: 2 }}>
+        <Skeleton variant="rounded" width={44} height={44} sx={{ flexShrink: 0 }} />
+        <Box sx={{ flex: 1 }}>
+            <Skeleton variant="text" width={56} height={36} />
+            <Skeleton variant="text" width="80%" />
+        </Box>
+    </Card>
+);
+
+const AttentionCardSkeleton = () => (
+    <Card variant="outlined" sx={{ borderRadius: 3, p: 3 }}>
+        <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+            <Skeleton variant="text" width="50%" height={28} />
+            <Skeleton variant="rounded" width={64} height={26} />
+        </Stack>
+        <Stack spacing={1.5}>
+            {[0, 1, 2].map((row) => (
+                <Stack key={row} direction="row" sx={{ justifyContent: "space-between", alignItems: "center" }}>
+                    <Box sx={{ flex: 1 }}>
+                        <Skeleton variant="text" width={row % 2 ? "55%" : "70%"} />
+                        <Skeleton variant="text" width={80} />
+                    </Box>
+                    <Skeleton variant="text" width={48} />
+                </Stack>
+            ))}
+        </Stack>
+    </Card>
+);
+
+const OverviewSkeleton = () => (
+    <Box aria-busy="true" aria-label="Loading overview">
+        <Typography variant="h5" component="h1" sx={{ mb: 3 }}>
+            Overview
+        </Typography>
+
+        <Grid container spacing={2.5} sx={{ mb: 4 }}>
+            {[0, 1, 2, 3].map((card) => (
+                <Grid key={card} size={{ xs: 12, sm: 6, md: 3 }}>
+                    <StatCardSkeleton />
+                </Grid>
+            ))}
+        </Grid>
+
+        <Skeleton variant="text" width={180} sx={{ mb: 3 }} />
+
+        <Grid container spacing={3}>
+            {[0, 1].map((card) => (
+                <Grid key={card} size={{ xs: 12, md: 6 }}>
+                    <AttentionCardSkeleton />
+                </Grid>
+            ))}
+        </Grid>
+    </Box>
+);
+
 const AdminOverview = ({ onSummary, onNavigate }: AdminOverviewProps) => {
     const { products } = useProducts();
 
@@ -108,13 +164,7 @@ const AdminOverview = ({ onSummary, onNavigate }: AdminOverviewProps) => {
     const pendingReviews = reviews.filter((review) => review.status === "pending");
     const revenue = orders.filter((order) => order.status === "paid").reduce((total, order) => total + order.amount, 0);
 
-    if (loading) {
-        return (
-            <Box sx={{ display: "flex", justifyContent: "center", py: 12 }}>
-                <CircularProgress color="primary" />
-            </Box>
-        );
-    }
+    if (loading) return <OverviewSkeleton />;
 
     return (
         <Box>

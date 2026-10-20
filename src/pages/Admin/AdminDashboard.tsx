@@ -12,6 +12,7 @@ import {
     InputAdornment,
     Paper,
     Snackbar,
+    Skeleton,
     Stack,
     Table,
     TableBody,
@@ -37,6 +38,7 @@ import type { ProductPayload } from "../../api/products";
 import { useProducts } from "../../data/useProducts";
 import type { Product } from "../../types/product";
 import ProductForm from "./ProductForm";
+import TableSkeletonRows from "./TableSkeletonRows";
 
 type Editing = { mode: "create" } | { mode: "edit"; product: Product } | null;
 
@@ -148,7 +150,7 @@ const AdminDashboard = () => {
                         Products
                     </Typography>
                     <Typography color="text.secondary" variant="body2">
-                        {loading ? "Loading…" : `${products.length} product${products.length === 1 ? "" : "s"} live on the site`}
+                        {loading ? <Skeleton variant="text" width={100} /> : `${products.length} product${products.length === 1 ? "" : "s"} live on the site`}
                     </Typography>
                 </Box>
 
@@ -207,13 +209,7 @@ const AdminDashboard = () => {
                     </TableHead>
 
                     <TableBody>
-                        {loading && (
-                            <TableRow>
-                                <TableCell colSpan={6} align="center" sx={{ py: 6 }}>
-                                    <CircularProgress size={28} />
-                                </TableCell>
-                            </TableRow>
-                        )}
+                        {loading && <TableSkeletonRows columns={["image", "text", "short", "number", "chip", "actions"]} />}
 
                         {!loading && products.length === 0 && (
                             <TableRow>

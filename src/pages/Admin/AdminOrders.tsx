@@ -11,6 +11,7 @@ import {
     InputAdornment,
     MenuItem,
     Paper,
+    Skeleton,
     Stack,
     Table,
     TableBody,
@@ -29,6 +30,7 @@ import { errorMessage } from "../../api/client";
 import { fetchOrders, updateOrderStatus } from "../../api/orders";
 import { orderShortCode } from "../../data/cart";
 import type { AdminOrder, OrderStatus } from "../../types/order";
+import TableSkeletonRows from "./TableSkeletonRows";
 
 const STATUS_OPTIONS: OrderStatus[] = ["pending", "paid", "failed", "cancelled"];
 const STATUS_FILTER_OPTIONS: Array<OrderStatus | "all"> = ["all", ...STATUS_OPTIONS];
@@ -138,7 +140,7 @@ const AdminOrders = ({ initialStatusFilter }: AdminOrdersProps) => {
                         Orders
                     </Typography>
                     <Typography color="text.secondary" variant="body2">
-                        {loading ? "Loading…" : `${orders.length} order${orders.length === 1 ? "" : "s"}`}
+                        {loading ? <Skeleton variant="text" width={100} /> : `${orders.length} order${orders.length === 1 ? "" : "s"}`}
                     </Typography>
                 </Box>
 
@@ -201,13 +203,7 @@ const AdminOrders = ({ initialStatusFilter }: AdminOrdersProps) => {
                     </TableHead>
 
                     <TableBody>
-                        {loading && (
-                            <TableRow>
-                                <TableCell colSpan={6} align="center" sx={{ py: 6 }}>
-                                    <CircularProgress size={28} />
-                                </TableCell>
-                            </TableRow>
-                        )}
+                        {loading && <TableSkeletonRows columns={["short", "text", "number", "number", "chip", "short"]} />}
 
                         {!loading && orders.length === 0 && (
                             <TableRow>

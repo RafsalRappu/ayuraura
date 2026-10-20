@@ -9,6 +9,7 @@ import {
     DialogTitle,
     IconButton,
     Paper,
+    Skeleton,
     Stack,
     Table,
     TableBody,
@@ -28,6 +29,7 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import { errorMessage } from "../../api/client";
 import { deleteCategory, fetchCategories, renameCategory } from "../../api/categories";
 import type { Category } from "../../types/category";
+import TableSkeletonRows from "./TableSkeletonRows";
 
 const AdminCategories = () => {
     const [categories, setCategories] = useState<Category[]>([]);
@@ -117,7 +119,7 @@ const AdminCategories = () => {
                         Categories
                     </Typography>
                     <Typography color="text.secondary" variant="body2">
-                        {loading ? "Loading…" : `${categories.length} categor${categories.length === 1 ? "y" : "ies"}`}
+                        {loading ? <Skeleton variant="text" width={100} /> : `${categories.length} categor${categories.length === 1 ? "y" : "ies"}`}
                     </Typography>
                 </Box>
 
@@ -148,13 +150,7 @@ const AdminCategories = () => {
                     </TableHead>
 
                     <TableBody>
-                        {loading && (
-                            <TableRow>
-                                <TableCell colSpan={3} align="center" sx={{ py: 6 }}>
-                                    <CircularProgress size={28} />
-                                </TableCell>
-                            </TableRow>
-                        )}
+                        {loading && <TableSkeletonRows columns={["text", "number", "actions"]} />}
 
                         {!loading && categories.length === 0 && (
                             <TableRow>

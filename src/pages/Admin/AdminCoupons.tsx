@@ -13,6 +13,7 @@ import {
     IconButton,
     MenuItem,
     Paper,
+    Skeleton,
     Stack,
     Switch,
     Table,
@@ -35,6 +36,7 @@ import { errorMessage } from "../../api/client";
 import { createCoupon, deleteCoupon, fetchCoupons, updateCoupon } from "../../api/coupons";
 import type { CouponPayload } from "../../api/coupons";
 import type { Coupon, CouponType } from "../../types/coupon";
+import TableSkeletonRows from "./TableSkeletonRows";
 
 type Editing = { mode: "create" } | { mode: "edit"; coupon: Coupon } | null;
 
@@ -181,7 +183,7 @@ const AdminCoupons = () => {
                         Coupons
                     </Typography>
                     <Typography color="text.secondary" variant="body2">
-                        {loading ? "Loading…" : `${coupons.length} coupon${coupons.length === 1 ? "" : "s"}`}
+                        {loading ? <Skeleton variant="text" width={100} /> : `${coupons.length} coupon${coupons.length === 1 ? "" : "s"}`}
                     </Typography>
                 </Box>
 
@@ -215,13 +217,7 @@ const AdminCoupons = () => {
                     </TableHead>
 
                     <TableBody>
-                        {loading && (
-                            <TableRow>
-                                <TableCell colSpan={6} align="center" sx={{ py: 6 }}>
-                                    <CircularProgress size={28} />
-                                </TableCell>
-                            </TableRow>
-                        )}
+                        {loading && <TableSkeletonRows columns={["short", "short", "text", "number", "chip", "actions"]} />}
 
                         {!loading && coupons.length === 0 && (
                             <TableRow>

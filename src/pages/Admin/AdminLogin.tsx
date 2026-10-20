@@ -1,6 +1,19 @@
 import { useState } from "react";
-import { Alert, Box, Button, CircularProgress, Paper, TextField, Typography } from "@mui/material";
+import {
+    Alert,
+    Box,
+    Button,
+    CircularProgress,
+    IconButton,
+    InputAdornment,
+    Paper,
+    TextField,
+    Typography,
+} from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
+import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
 
 import { errorMessage } from "../../api/client";
 import { login } from "../../api/admin";
@@ -12,6 +25,8 @@ interface AdminLoginProps {
 
 const AdminLogin = ({ configured, onSignedIn }: AdminLoginProps) => {
     const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
+    const [capsLock, setCapsLock] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -31,22 +46,62 @@ const AdminLogin = ({ configured, onSignedIn }: AdminLoginProps) => {
         }
     };
 
+    const trackCapsLock = (event: React.KeyboardEvent) => {
+        setCapsLock(event.getModifierState("CapsLock"));
+    };
+
     return (
-        <Box sx={{ display: "flex", justifyContent: "center", pt: { xs: 6, md: 12 }, px: 2 }}>
-            <Paper sx={{ p: 4, borderRadius: 4, width: "100%", maxWidth: 420 }} elevation={0} variant="outlined">
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
-                    <LockOutlinedIcon color="primary" />
-                    <Typography variant="h5" component="h1">
-                        Product admin
+        <Box
+            sx={{
+                minHeight: "calc(100vh - 64px)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                px: 2,
+                py: { xs: 4, md: 6 },
+                background: (theme) =>
+                    `radial-gradient(circle at 20% 15%, ${alpha(theme.palette.primary.main, 0.08)}, transparent 45%),
+                     radial-gradient(circle at 85% 85%, ${alpha(theme.palette.primary.main, 0.06)}, transparent 40%)`,
+            }}
+        >
+            <Paper
+                elevation={0}
+                sx={{
+                    width: "100%",
+                    maxWidth: 420,
+                    p: { xs: 3, sm: 5 },
+                    borderRadius: 5,
+                    border: "1px solid",
+                    borderColor: "divider",
+                    boxShadow: (theme) => `0 24px 60px -24px ${alpha(theme.palette.primary.main, 0.25)}`,
+                }}
+            >
+                <Box sx={{ textAlign: "center", mb: 4 }}>
+                    <Box
+                        sx={{
+                            width: 56,
+                            height: 56,
+                            mx: "auto",
+                            mb: 2,
+                            borderRadius: "50%",
+                            display: "grid",
+                            placeItems: "center",
+                            color: "primary.main",
+                            bgcolor: (theme) => alpha(theme.palette.primary.main, 0.1),
+                        }}
+                    >
+                        <LockOutlinedIcon />
+                    </Box>
+                    <Typography variant="h5" component="h1" sx={{ fontWeight: 600, mb: 1 }}>
+                        Welcome back
+                    </Typography>
+                    <Typography color="text.secondary" variant="body2">
+                        Sign in to manage products, orders and more.
                     </Typography>
                 </Box>
 
-                <Typography color="text.secondary" sx={{ mb: 3 }}>
-                    Sign in to add and edit the products shown on the site.
-                </Typography>
-
                 {!configured && (
-                    <Alert severity="warning" sx={{ mb: 3 }}>
+                    <Alert severity="warning" sx={{ mb: 3, borderRadius: 2 }}>
                         Admin access is not set up yet. Add <strong>ADMIN_PASSWORD</strong> and{" "}
                         <strong>ADMIN_SESSION_SECRET</strong> to the project's environment variables,
                         then redeploy.
@@ -54,7 +109,7 @@ const AdminLogin = ({ configured, onSignedIn }: AdminLoginProps) => {
                 )}
 
                 {error && (
-                    <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
+                    <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }} onClose={() => setError(null)}>
                         {error}
                     </Alert>
                 )}
@@ -62,13 +117,34 @@ const AdminLogin = ({ configured, onSignedIn }: AdminLoginProps) => {
                 <Box component="form" onSubmit={handleSubmit}>
                     <TextField
                         label="Password"
-                        type="password"
+                        type={showPassword ? "text" : "password"}
                         value={password}
                         onChange={(event) => setPassword(event.target.value)}
+                        onKeyDown={trackCapsLock}
+                        onKeyUp={trackCapsLock}
                         fullWidth
                         autoFocus
                         autoComplete="current-password"
-                        sx={{ mb: 3 }}
+                        helperText={capsLock ? "Caps Lock is on" : " "}
+                        slotProps={{
+                            formHelperText: { sx: { color: "warning.main" } },
+                            input: {
+                                sx: { borderRadius: 3 },
+                                endAdornment: (
+                                    <InputAdornment position="end">
+                                        <IconButton
+                                            aria-label={showPassword ? "Hide password" : "Show password"}
+                                            onClick={() => setShowPassword((shown) => !shown)}
+                                            onMouseDown={(event) => event.preventDefault()}
+                                            edge="end"
+                                        >
+                                            {showPassword ? <VisibilityOffOutlinedIcon /> : <VisibilityOutlinedIcon />}
+                                        </IconButton>
+                                    </InputAdornment>
+                                ),
+                            },
+                        }}
+                        sx={{ mb: 2 }}
                     />
 
                     <Button
@@ -77,11 +153,16 @@ const AdminLogin = ({ configured, onSignedIn }: AdminLoginProps) => {
                         fullWidth
                         size="large"
                         disabled={submitting || !password || !configured}
-                        startIcon={submitting ? <CircularProgress size={16} /> : undefined}
+                        startIcon={submitting ? <CircularProgress size={16} color="inherit" /> : undefined}
+                        sx={{ py: 1.5, borderRadius: 3, fontWeight: 600, boxShadow: "none" }}
                     >
-                        Sign in
+                        {submitting ? "Signing in…" : "Sign in"}
                     </Button>
                 </Box>
+
+                <Typography variant="caption" color="text.secondary" sx={{ display: "block", textAlign: "center", mt: 3 }}>
+                    Restricted area · AyuAura team only
+                </Typography>
             </Paper>
         </Box>
     );

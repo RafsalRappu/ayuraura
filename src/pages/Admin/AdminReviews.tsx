@@ -9,6 +9,7 @@ import {
     DialogContent,
     DialogTitle,
     Paper,
+    Skeleton,
     Stack,
     Table,
     TableBody,
@@ -26,6 +27,7 @@ import { errorMessage } from "../../api/client";
 import { deleteReview, fetchAllReviews, updateReviewStatus } from "../../api/reviews";
 import StarRating from "../../components/common/StarRating";
 import type { AdminReview, ReviewStatus } from "../../types/review";
+import TableSkeletonRows from "./TableSkeletonRows";
 
 const STATUS_LABEL: Record<ReviewStatus, string> = {
     pending: "Pending",
@@ -112,7 +114,7 @@ const AdminReviews = () => {
                         Reviews
                     </Typography>
                     <Typography color="text.secondary" variant="body2">
-                        {loading ? "Loading…" : `${reviews.length} review${reviews.length === 1 ? "" : "s"}`}
+                        {loading ? <Skeleton variant="text" width={100} /> : `${reviews.length} review${reviews.length === 1 ? "" : "s"}`}
                     </Typography>
                 </Box>
 
@@ -141,13 +143,7 @@ const AdminReviews = () => {
                     </TableHead>
 
                     <TableBody>
-                        {loading && (
-                            <TableRow>
-                                <TableCell colSpan={6} align="center" sx={{ py: 6 }}>
-                                    <CircularProgress size={28} />
-                                </TableCell>
-                            </TableRow>
-                        )}
+                        {loading && <TableSkeletonRows columns={["text", "short", "short", "text", "chip", "short"]} />}
 
                         {!loading && reviews.length === 0 && (
                             <TableRow>
